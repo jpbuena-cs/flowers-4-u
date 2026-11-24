@@ -7,7 +7,7 @@ const RAMP = " .-',:~\";^!_*+|=/\\)(r<>[]l?jv1cxzu7LYins}yJTt{Cfw%IVhFk2oX3mqdZ$
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
-const ENTRY_DURATION = 3600;
+const ENTRY_DURATION = 4600;
 const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 const TAU = Math.PI * 2;
@@ -21,13 +21,15 @@ let sourcePixels = null;
 let pixels = null;
 let columns = 0;
 let rows = 0;
-let fontSize = 6;
 let animationFrame = 0;
 let startTimer = 0;
 let lastFrameAt = 0;
 let animationStartedAt = 0;
-let isVisible = !document.hidden;
+let animationElapsed = 0;
+let entranceAnimation = null;
+let entranceStarted = false;
 let hasEntered = false;
+let isVisible = !document.hidden;
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
@@ -63,7 +65,7 @@ function buildSampleGrid() {
   const gridChanged = targetColumns !== columns || targetRows !== rows || !pixels;
 
   // Font size can change even when the mobile/desktop column target stays the same.
-  fontSize = getFontSize(targetColumns, targetRows);
+  const fontSize = getFontSize(targetColumns, targetRows);
   output.style.setProperty("--art-size", fontSize.toFixed(3) + "px");
 
   if (!gridChanged) return false;
@@ -94,7 +96,7 @@ function buildSampleGrid() {
     }
   }
 
-  renderFrame(0, false);
+  renderFrame(animationElapsed, false);
   return true;
 }
 
@@ -126,30 +128,79 @@ function samplePixel(x, y) {
   return top * (1 - fy) + bottom * fy;
 }
 
+function stopAnimationLoop() {
+  if (animationFrame) cancelAnimationFrame(animationFrame);
+  animationFrame = 0;
+  if (startTimer) clearTimeout(startTimer);
+  startTimer = 0;
+}
+
+function cancelEntrance() {
+  if (entranceAnimation) {
+    entranceAnimation.onfinish = null;
+    entranceAnimation.cancel();
+    entranceAnimation = null;
+  }
+  entranceStarted = false;
+}
+
 function setArtAtRest() {
+  cancelEntrance();
   output.style.transition = "none";
   output.style.transform = "translate3d(0, 0, 0)";
 }
 
 function placeArtBelowViewport() {
   const artHeight = output.getBoundingClientRect().height;
-  const offset = (stage.clientHeight + artHeight) / 2 + 32;
+  const offset = Math.ceil((stage.clientHeight + artHeight) / 2 + 36);
 
-  // The pre is centered by the stage grid. This offset puts its top edge
-  // just below the viewport, so the complete hand rises into view from below.
+  // The text block is centered by the stage grid. This puts its top edge
+  // 36px below the viewport before the entrance begins.
   output.style.transition = "none";
-  output.style.transform = "translate3d(0, " + Math.ceil(offset) + "px, 0)";
+  output.style.transform = "translate3d(0, " + offset + "px, 0)";
   output.getBoundingClientRect();
+  return offset;
 }
 
-function beginEntrance() {
-  output.style.transition =
-    "transform " + ENTRY_DURATION + "ms cubic-bezier(0.22, 0.74, 0.18, 1)";
+function beginEntrance(offset) {
+  entranceStarted = true;
 
-  requestAnimationFrame(() => {
-    output.style.transform = "translate3d(0, 0, 0)";
-    hasEntered = true;
+  const animation = output.animate([
+    {
+      transform: "translate3d(0, " + offset + "px, 0)",
+      offset: 0,
+      easing: "cubic-bezier(0.16, 0.76, 0.2, 1)",
+    },
+    {
+      transform: "translate3d(0, -2.5px, 0)",
+      offset: 0.88,
+      easing: "cubic-bezier(0.2, 0.66, 0.28, 1)",
+    },
+    {
+      transform: "translate3d(0, 0.8px, 0)",
+      offset: 0.965,
+      easing: "ease-out",
+    },
+    {
+      transform: "translate3d(0, 0, 0)",
+      offset: 1,
+    },
+  ], {
+    duration: ENTRY_DURATION,
+    fill: "both",
   });
+
+  entranceAnimation = animation;
+  animation.onfinish = () => {
+    if (entranceAnimation !== animation) return;
+
+    // Commit the exact resting position before clearing the fill effect.
+    output.style.transform = "translate3d(0, 0, 0)";
+    animation.cancel();
+    entranceAnimation = null;
+    entranceStarted = false;
+    hasEntered = true;
+  };
 }
 
 function renderFrame(elapsed, animated) {
@@ -212,13 +263,6 @@ function renderFrame(elapsed, animated) {
   output.textContent = lines.join("\n");
 }
 
-function stopAnimation() {
-  if (animationFrame) cancelAnimationFrame(animationFrame);
-  animationFrame = 0;
-  if (startTimer) clearTimeout(startTimer);
-  startTimer = 0;
-}
-
 function animate(timestamp) {
   if (!isVisible || REDUCED_MOTION.matches) {
     animationFrame = 0;
@@ -227,15 +271,15 @@ function animate(timestamp) {
 
   if (timestamp - lastFrameAt >= FRAME_INTERVAL) {
     lastFrameAt = timestamp;
-    renderFrame(timestamp - animationStartedAt, true);
+    animationElapsed = timestamp - animationStartedAt;
+    renderFrame(animationElapsed, true);
   }
 
   animationFrame = requestAnimationFrame(animate);
 }
 
 function startAnimation({ enter = false } = {}) {
-  stopAnimation();
-
+  stopAnimationLoop();
   if (!pixels) return;
 
   if (REDUCED_MOTION.matches) {
@@ -247,27 +291,42 @@ function startAnimation({ enter = false } = {}) {
 
   if (!isVisible) return;
 
-  const shouldEnter = enter && !hasEntered;
-  if (shouldEnter) {
-    placeArtBelowViewport();
-  } else {
-    setArtAtRest();
+  // If the page was hidden during the entrance, resume the same animation
+  // instead of jumping back below the viewport or replaying the entrance.
+  if (entranceAnimation && entranceStarted) {
+    entranceAnimation.play();
+    animationStartedAt = performance.now() - animationElapsed;
+    animationFrame = requestAnimationFrame(animate);
+    return;
   }
 
-  renderFrame(0, false);
+  const shouldEnter = enter && !hasEntered;
+  const entranceOffset = shouldEnter ? placeArtBelowViewport() : null;
+
+  if (!shouldEnter) setArtAtRest();
+  renderFrame(animationElapsed, false);
 
   startTimer = window.setTimeout(() => {
-    animationStartedAt = performance.now();
+    animationStartedAt = performance.now() - animationElapsed;
     lastFrameAt = 0;
     animationFrame = requestAnimationFrame(animate);
 
-    if (shouldEnter) beginEntrance();
+    if (shouldEnter) beginEntrance(entranceOffset);
   }, START_DELAY);
 }
 
 function refreshLayout() {
   const gridChanged = buildSampleGrid();
-  if (gridChanged) startAnimation({ enter: !hasEntered });
+  if (!gridChanged) return;
+
+  // If the viewport changes while the first entrance is in progress, rebuild
+  // the offscreen starting position using the new art dimensions.
+  if (entranceAnimation && entranceStarted) {
+    cancelEntrance();
+    hasEntered = false;
+  }
+
+  startAnimation({ enter: !hasEntered });
 }
 
 async function loadArtworkMap() {
@@ -309,14 +368,15 @@ async function loadArtworkMap() {
   }
 }
 
-const resizeObserver = new ResizeObserver(() => refreshLayout());
+const resizeObserver = new ResizeObserver(refreshLayout);
 resizeObserver.observe(stage);
 
 REDUCED_MOTION.addEventListener("change", () => {
-  stopAnimation();
+  stopAnimationLoop();
 
   if (REDUCED_MOTION.matches) {
     hasEntered = true;
+    animationElapsed = 0;
     setArtAtRest();
     renderFrame(0, false);
   } else {
@@ -328,7 +388,11 @@ document.addEventListener("visibilitychange", () => {
   isVisible = !document.hidden;
 
   if (!isVisible) {
-    stopAnimation();
+    if (animationStartedAt) {
+      animationElapsed = performance.now() - animationStartedAt;
+    }
+    stopAnimationLoop();
+    if (entranceAnimation) entranceAnimation.pause();
   } else {
     startAnimation({ enter: !hasEntered });
   }

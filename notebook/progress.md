@@ -1,34 +1,39 @@
 # Progress
 
-## Entrance correction — 2026-11-24
+## Source-image alignment and Phase 1 refinement — 2026-11-24
 
-### User clarification
+### Canonical source image
 
-“Slow moving upwards creep” means the entire hand starts outside the visible page, below the viewport, then moves upward into the website's view. It does not mean that the raised finger independently lifts or articulates.
+- Added [source-image.md](./source-image.md) and [references/source-glove.png](./references/source-glove.png).
+- The newly re-uploaded source is pixel-identical to the first image supplied for this project.
+- Original source details and SHA-256 are recorded in source-image.md.
+- The existing compressed ASCII map remains based on that same image.
 
-### Implemented
+### Phase 1 — Entrance polish
 
-- Removed the independent finger-lift deformation and all finger-specific timing/masking.
-- The complete ASCII hand is initially placed below the viewport using a calculated CSS transform.
-- After an approximately 1.8-second pause, the fabric-light animation and subtle living-portrait idle movement start.
-- At the same time, the whole hand enters upward over approximately 3.6 seconds with a slow ease-out.
-- After entering, the hand remains centered while the fabric light and tiny wrist-led idle motion continue.
-- The entrance is only played once; it does not replay after resizing or returning to a visible tab.
-- Reduced-motion mode displays the complete image immediately in its final centered position.
+Implemented:
 
-### Technical notes
+- Increased entrance duration from 3.6 to 4.6 seconds.
+- Replaced the basic CSS transition with a paced Web Animations API sequence.
+- The hand starts completely below the visible viewport.
+- After the existing 1.8-second delay, the whole hand rises into view.
+- The main part of the entrance uses a smooth ease-out.
+- Added a barely perceptible 2.5px settle past center, followed by a 0.8px return and a final exact-center rest. This is intended to feel weighted, not bouncy.
+- Fabric lighting and subtle portrait-style idle movement begin at the same time as the entrance and continue afterward.
+- If a tab is hidden mid-entrance, the browser animation pauses and resumes from its existing position rather than replaying from below.
+- If a responsive grid change occurs while entering, the starting position is recalculated for the new dimensions.
+- Reduced-motion mode immediately displays the final centered still image.
 
-- Entrance is a CSS transform of the complete ASCII art element.
-- The source image remains a single flattened artwork. No independent finger rig or 2.5D depth layers are claimed.
-- The character grid continues to use the existing low-amplitude wrist pivot and drift effect for the living-image feel.
+### Pending user review
 
-### Not yet verified
-
-- The revised entrance has not yet been checked on a physical phone.
-- The entrance should be visually reviewed at several aspect ratios to confirm the full character map starts completely outside the visible frame.
+- Confirm whether the 4.6-second pace feels right on desktop.
+- Confirm the starting position is fully outside the viewport on mobile.
+- Confirm the tiny settle is subtle enough and does not read as a bounce.
+- Tune the timing only in response to observed feedback.
 
 ### Next work
 
-1. Check whether the 3.6-second entrance is the right pace.
-2. Tune the start offset or duration if the first characters appear too early or the movement feels too slow.
-3. Ask for visual approval before enabling GitHub Pages.
+1. Get user feedback on the refined entrance.
+2. Make any final Phase 1 timing or easing adjustments.
+3. Move to Phase 2 only after the entrance is approved.
+4. Keep GitHub Pages disabled until explicit approval.

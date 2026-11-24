@@ -2,7 +2,7 @@
 
 ## Current stage
 
-The static ASCII rendering and first entrance animation are implemented. The next phase is **motion and visual refinement**. Work should improve the existing experience before adding complexity.
+The static ASCII rendering and first entrance animation are implemented. The project is in **Phase 1 — Polish the entrance**.
 
 The page's core rule remains unchanged: the ASCII artwork is the entire website. There should be no visible copy, controls, menus, navigation, or sound.
 
@@ -10,24 +10,32 @@ The page's core rule remains unchanged: the ASCII artwork is the entire website.
 
 ### Phase 1 — Polish the entrance
 
-**Priority: next**
+**Status: implementation refined; user-device review pending**
 
 The hand should feel as though it is making a calm entrance into the scene, not simply sliding into place.
 
-Planned refinements:
+Refinements implemented:
 
-- Confirm the hand begins completely below the visible viewport.
-- Review the 1.8-second pause before movement.
-- Tune the 3.6-second entrance duration and ease-out curve.
-- Make the hand settle naturally at the exact center without a conspicuous bounce.
-- Keep fabric lighting and subtle portrait motion active during the entrance.
-- Check the first and final frames for clipping at desktop and mobile aspect ratios.
+- The hand begins completely below the visible viewport.
+- The initial pause remains 1.8 seconds.
+- The entrance duration is now 4.6 seconds.
+- The main movement eases out smoothly and finishes with a tiny, restrained settling adjustment.
+- No conspicuous bounce or overshoot.
+- Fabric lighting and subtle portrait motion run throughout the entrance.
+- The exact centered resting position is committed after the entrance completes.
+- The initial and final positions are designed to avoid clipping on desktop and mobile.
+
+Remaining review:
+
+- Check the entrance speed and settling feel on the user's own desktop and phone.
+- Confirm the entire artwork starts outside the frame at different aspect ratios.
+- Tune duration or easing only in response to observed behavior.
 
 **Completion criteria:** the whole hand emerges smoothly from below the frame, settles cleanly in the center, and does not feel rushed or mechanical.
 
 ### Phase 2 — Improve the living-portrait effect
 
-**Priority: after entrance refinement**
+**Priority: after Phase 1 approval**
 
 Make the otherwise still hand feel quietly alive.
 
@@ -103,7 +111,7 @@ Constraints and risks:
 - Segmentation would require carefully reconstructing hidden areas and soft transitions.
 - Gaps, seams, or stretching could make the ASCII artwork look worse.
 - A regional rig should only be attempted if the current restrained motion is not convincing enough.
-- Do not introduce unnecessary complexity before reviewing the existing motion on the user's devices.
+- Do not introduce unnecessary complexity before reviewing the existing motion.
 
 ## Working method
 
@@ -115,4 +123,4 @@ Constraints and risks:
 
 ## Current next action
 
-Refine **Phase 1 — Polish the entrance**. Do not begin regional segmentation or a major ASCII conversion rewrite yet.
+Get the user's feedback on the refined Phase 1 entrance. Do not begin Phase 2 or regional segmentation until the entrance has been reviewed.

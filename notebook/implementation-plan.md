@@ -5,8 +5,9 @@
 - index.html: minimal document shell and the single visible ASCII output element.
 - styles.css: viewport centering, monochrome palette, monospace typography, and overflow control.
 - src/main.js: text-map loading, responsive sampling, luminance mapping, procedural idle motion, entrance timing, and reduced-motion handling.
-- assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the user-provided glove image.
-- notebook/: project intent, settled choices, implementation notes, roadmap, and progress.
+- assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the exact source image documented in [source-image.md](./source-image.md).
+- notebook/references/source-glove.png: compact visual copy of the original supplied source for design alignment.
+- notebook/: project intent, source reference, settled choices, implementation notes, roadmap, and progress.
 
 ## Rendering pipeline
 
@@ -20,18 +21,20 @@
 ## Motion pipeline
 
 1. Render the complete ASCII hand while positioning its text container below the viewport, outside the visible frame.
-2. Wait 1.8 seconds after the character map is ready.
+2. Wait 1.8 seconds after the map is ready.
 3. Start the fabric-light sweep and subtle living-portrait idle movement.
-4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 3.6 seconds.
-5. Keep the fabric light and quiet hand idle looping after the entrance has completed.
-6. Pause motion while the document is hidden and honor prefers-reduced-motion.
+4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 4.6 seconds.
+5. Use a long ease-out for the main rise, then a very small settle to exact center. Avoid visible bouncing.
+6. Keep the fabric light and quiet hand idle looping after the entrance has completed.
+7. Pause motion while the document is hidden and honor prefers-reduced-motion.
 
 ## Implementation constraints
 
-- The entrance moves the complete ASCII artwork via a GPU-friendly CSS transform. It does not reshape or separately animate the raised finger.
+- The entrance moves the complete ASCII artwork via the Web Animations API transform. It does not reshape or separately animate the raised finger.
 - The source is one flattened image; the tiny idle movement remains a restrained image-grid remap, not true layered parallax.
 - The entrance offset is calculated from the viewport and rendered art height, so the complete text image begins below the frame on desktop and mobile.
-- On resize before the first entrance, recalculate the offscreen offset. Once the entrance has happened, do not replay it.
+- If the page is hidden during the entrance, pause and resume the same entrance rather than restarting it.
+- If the grid dimensions change before the entrance completes, recalculate the offscreen position for the new text dimensions.
 - Reduced-motion preference shows the complete image immediately in its final position.
 - Keep the page artwork-only: no visible text, interface controls, menus, navigation, or sound.
 
@@ -41,6 +44,7 @@
 
 - [x] Add a precomputed high-density character map.
 - [x] Verify browser rendering and viewport fit at desktop and mobile sizes.
+- [x] Add the canonical source image and source description to the notebook.
 
 ### M2 — Entrance and idle animation baseline
 
@@ -52,10 +56,19 @@
 - [x] Remove the previously misunderstood independent finger-lift deformation.
 - [x] Keep reduced-motion output static and centered.
 
-### M3 — Refinement roadmap
+### M3 — Phase 1 entrance refinement
 
-See [roadmap.md](./roadmap.md) for the ordered next phases:
-1. Polish the entrance.
+- [x] Increase the entrance duration to 4.6 seconds.
+- [x] Replace the basic transition with a paced ease-out entrance.
+- [x] Add a tiny, restrained settle into exact center without a noticeable bounce.
+- [x] Preserve the concurrent fabric-light and living-portrait animations.
+- [x] Pause/resume the same entrance if the tab becomes hidden.
+- [ ] Review entrance speed and settling on the user's own devices.
+
+### M4 — Next refinements
+
+See [roadmap.md](./roadmap.md) for the ordered phases:
+1. Finish user review of Phase 1.
 2. Improve the living-portrait effect.
 3. Refine the ASCII rendering.
 4. Check performance and compatibility.
@@ -70,8 +83,9 @@ Optional regional motion is exploratory and should only be considered after the 
 - No line wraps; no horizontal page scrolling.
 - Entire hand begins below the visible viewport.
 - Entrance moves upward into the centered final position.
+- Entrance eases naturally and settles without a conspicuous bounce.
 - Fabric light and subtle portrait motion are active during entrance.
-- Entrance does not repeat when returning to a visible tab after completion.
+- Entrance does not replay after completion or when a hidden tab becomes visible again.
 - Reduced-motion preference produces an immediate static frame.
 - Hidden tabs stop requesting animation frames.
 - GitHub Pages remains disabled until explicit user approval.
