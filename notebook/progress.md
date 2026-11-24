@@ -271,3 +271,13 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - Marked Phase 4 real-device verification and Phase 5 build/device review as complete in the roadmap and implementation plan.
 - The GitHub repository remains private and GitHub Pages remains disabled.
 - The only remaining Phase 5 gate is the publication decision: confirm public website visibility, confirm the eligible hosting route for the private repository, and obtain explicit approval before enabling Pages.
+
+
+## Release cleanup — comments, README, and repository rename review — 2026-11-24
+
+- Removed standalone line comments from `src/main.js` and `scripts/build-site.mjs` without changing executable statements.
+- Confirmed there are no HTML comments in `index.html` and no CSS comments in `styles.css`.
+- Replaced the root README with the project structure only.
+- Checked the runtime's resource references and build helper paths. They are relative and do not depend on the repository slug.
+- Documented the effects of a possible `sumosobra-kana` → `flowers-4-u` rename. No rename was performed.
+- Recommended choosing the final repository name before enabling GitHub Pages because repository redirects do not cover the published project-site URL.

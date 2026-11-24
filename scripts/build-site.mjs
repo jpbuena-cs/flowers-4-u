@@ -5,8 +5,6 @@ import { fileURLToPath } from "node:url";
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputDirectory = resolve(projectRoot, "dist");
 
-// Keep the deployable site to an explicit allow-list. The notebook, original
-// source image, README, and development scripts must not enter the public site.
 const publicFiles = [
   "index.html",
   "styles.css",
@@ -39,7 +37,6 @@ for (const relativePath of publicFiles) {
   }
 }
 
-// Rebuild the output from the allow-list each time, removing stale files.
 await rm(outputDirectory, { recursive: true, force: true });
 
 for (const relativePath of publicFiles) {

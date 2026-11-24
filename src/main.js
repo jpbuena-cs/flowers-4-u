@@ -2,8 +2,6 @@ const MAP_URL = new URL("../assets/glove-map.txt.gz", import.meta.url);
 const SOURCE_COLUMNS = 144;
 const SOURCE_ROWS = 144;
 
-// Ordered from visually sparse to visually dense. The map uses this same ramp.
-// 95 glyphs sorted by average ink coverage across Liberation Mono and DejaVu Sans Mono.
 const RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HO$&D08gRNQWMB@";
 const CHARACTER_CODES = new Uint16Array(
   Array.from({ length: 256 }, (_, value) =>
@@ -84,13 +82,9 @@ async function beginExperience() {
   startRequested = true;
   startPrompt.disabled = true;
 
-  // Calling resume() directly inside this click handler satisfies browsers
-  // that require an explicit user gesture before enabling Web Audio.
   const context = getAudioContext();
   if (context) {
     try {
-      // Invoke resume immediately during the user gesture, then await the
-      // result before starting the entrance countdown.
       const resumePromise = context.state === "running"
         ? Promise.resolve()
         : context.resume();
@@ -109,8 +103,6 @@ async function beginExperience() {
     startPrompt.hidden = true;
   }, 260);
 
-  // The normal 1.8-second entrance delay starts after the user's tap. The
-  // scrape is scheduled 260ms before the hand begins moving.
   startAnimation({ enter: true });
 }
 
@@ -135,12 +127,9 @@ function stopEntranceSound() {
 
   const now = audioContext.currentTime;
   try {
-    // Set the gain to silence immediately in audio time. This also works when
-    // the browser has suspended the context because the page became hidden.
     activeSoundMaster.gain.cancelScheduledValues(now);
     activeSoundMaster.gain.setValueAtTime(0.0001, now);
   } catch {
-    // Continue stopping individual sources even if the context is interrupted.
   }
 
   const stopAt = now + (audioContext.state === "running" ? 0.12 : 0.01);
@@ -148,7 +137,6 @@ function stopEntranceSound() {
     try {
       source.stop(stopAt);
     } catch {
-      // A source may already have reached its scheduled end.
     }
   }
 
@@ -178,8 +166,6 @@ function playStoneDrag(durationSeconds) {
   master.gain.linearRampToValueAtTime(0.0001, endAt);
   master.connect(context.destination);
 
-  // A single seeded noise bed feeds two filters: a gritty, rough scrape and
-  // a low rolling rumble. The seed keeps the character of the joke consistent.
   const frameCount = Math.ceil(context.sampleRate * duration);
   const noiseBuffer = context.createBuffer(1, frameCount, context.sampleRate);
   const noise = noiseBuffer.getChannelData(0);
@@ -225,8 +211,6 @@ function playStoneDrag(durationSeconds) {
   rumbleFilter.connect(rumbleGain);
   rumbleGain.connect(master);
 
-  // Low, slightly detuned tones make the scrape feel like a heavy object
-  // taking its weight and dragging, rather than a bright metallic clang.
   const bodyOscillator = context.createOscillator();
   bodyOscillator.type = "sine";
   bodyOscillator.frequency.setValueAtTime(48, startAt);
@@ -296,7 +280,6 @@ function playStoneDrag(durationSeconds) {
       secondaryGain.disconnect();
       master.disconnect();
     } catch {
-      // Audio nodes may already be disconnected by browser cleanup.
     }
   }, duration * 1000 + 250);
 
@@ -369,9 +352,6 @@ function buildSampleGrid() {
   );
   const gridChanged = targetColumns !== columns || targetRows !== rows || !pixels;
 
-  // A viewport-height change can alter the fitted font size without crossing
-  // the mobile/desktop breakpoint. Track that too so the offscreen offset is
-  // recalculated before the first entrance.
   const nextFontSize = getFontSize(targetColumns, targetRows);
   const fontChanged = currentFontSize === null || Math.abs(nextFontSize - currentFontSize) > 0.02;
   currentFontSize = nextFontSize;
@@ -383,7 +363,6 @@ function buildSampleGrid() {
   rows = targetRows;
   pixels = new Uint8Array(columns * rows);
 
-  // Average source cells when reducing from the desktop map to the mobile grid.
   for (let y = 0; y < rows; y += 1) {
     const sourceY0 = Math.floor((y * SOURCE_ROWS) / rows);
     const sourceY1 = Math.max(sourceY0 + 1, Math.floor(((y + 1) * SOURCE_ROWS) / rows));
@@ -414,8 +393,6 @@ function buildMotionFields() {
   const length = columns * rows;
   const motionScale = Math.sqrt(columns / SOURCE_COLUMNS);
 
-  // Precompute masks and spatial wave coefficients once per grid size.
-  // The frame renderer only applies time-dependent multipliers to these.
   const fields = {
     palmXSin: new Float32Array(length),
     palmXCos: new Float32Array(length),
@@ -478,8 +455,6 @@ function buildMotionFields() {
 }
 
 function samplePixel(x, y) {
-  // Samples outside the map as black. This prevents edge pixels from smearing
-  // as the hand makes its tiny portrait-style idle movements.
   if (x < 0 || y < 0 || x > columns - 1 || y > rows - 1) return 0;
 
   const x0 = Math.floor(x);
@@ -525,8 +500,6 @@ function placeArtBelowViewport() {
   const artHeight = output.getBoundingClientRect().height;
   const offset = Math.ceil((stage.clientHeight + artHeight) / 2 + 36);
 
-  // The text block is centered by the stage grid. This puts its top edge
-  // 36px below the viewport before the entrance begins.
   output.style.transition = "none";
   output.style.transform = "translate3d(0, " + offset + "px, 0)";
   output.getBoundingClientRect();
@@ -565,7 +538,6 @@ function beginEntrance(offset) {
   animation.onfinish = () => {
     if (entranceAnimation !== animation) return;
 
-    // Commit the exact resting position before clearing the fill effect.
     output.style.transform = "translate3d(0, 0, 0)";
     animation.cancel();
     entranceAnimation = null;
@@ -583,7 +555,6 @@ function renderFrame(elapsed, animated) {
     ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * TAU)
     : -1;
 
-  // Temporal terms are calculated once per frame, not once per character.
   const palmXSin = isMoving ? Math.sin(elapsed * 0.00034) : 0;
   const palmXCos = isMoving ? Math.cos(elapsed * 0.00034) : 0;
   const cuffXSin = isMoving ? Math.sin(elapsed * 0.00027) : 0;
@@ -596,7 +567,6 @@ function renderFrame(elapsed, animated) {
   const fabricCos = isMoving ? Math.cos(elapsed * 0.00062) : 0;
   const slowBreath = isMoving ? Math.sin(elapsed * 0.00038) * 1.1 : 0;
 
-  // The light sweep varies only by column. Calculate 72/144 weights once.
   if (isMoving) {
     for (let x = 0; x < columns; x += 1) {
       const distance = (fields.horizontal[x] - sweepPosition) / 0.24;
@@ -604,8 +574,6 @@ function renderFrame(elapsed, animated) {
     }
   }
 
-  // Living-portrait idle: preserve the approved wrist-led movement, breathing,
-  // and drift. These values are shared by the whole character grid.
   const idlePhase = (elapsed / 19600) * TAU;
   const idleAngle = isMoving ? Math.sin(idlePhase + 0.35) * 0.0031 : 0;
   const cosine = Math.cos(idleAngle);
@@ -636,7 +604,6 @@ function renderFrame(elapsed, animated) {
       let sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
 
       if (isMoving) {
-        // Apply precomputed feathered masks via time-dependent multipliers.
         sourceX += palmXSin * fields.palmXCos[index]
           + palmXCos * fields.palmXSin[index]
           + cuffXSin * fields.cuffXCos[index]
@@ -666,8 +633,6 @@ function renderFrame(elapsed, animated) {
     if (y < rows - 1) outputBuffer[writeIndex++] = 10;
   }
 
-  // Convert the reused character buffer in safe-size chunks and update the
-  // same text node. No row arrays or per-cell character strings are allocated.
   fields.stringParts.length = 0;
   const CHUNK_SIZE = 8192;
   for (let offset = 0; offset < writeIndex; offset += CHUNK_SIZE) {
@@ -686,8 +651,6 @@ function animate(timestamp) {
 
   const frameDelta = timestamp - lastFrameAt;
   if (frameDelta >= FRAME_INTERVAL) {
-    // Carry fractional frame intervals forward to preserve a stable 24 FPS
-    // cadence on common 60 Hz displays.
     const elapsedIntervals = Math.max(1, Math.floor(frameDelta / FRAME_INTERVAL));
     lastFrameAt += elapsedIntervals * FRAME_INTERVAL;
     animationElapsed = timestamp - animationStartedAt;
@@ -710,8 +673,6 @@ function startAnimation({ enter = false } = {}) {
 
   if (!isVisible) return;
 
-  // If the page was hidden during the entrance, resume the same animation
-  // instead of jumping back below the viewport or replaying the entrance.
   if (entranceAnimation && entranceStarted) {
     entranceAnimation.play();
     animationStartedAt = performance.now() - animationElapsed;
@@ -755,8 +716,6 @@ function refreshLayout() {
     return;
   }
 
-  // If the viewport changes while the first entrance is in progress, rebuild
-  // the offscreen starting position using the new art dimensions.
   if (entranceAnimation && entranceStarted) {
     cancelEntrance();
     hasEntered = false;
@@ -808,14 +767,11 @@ async function loadArtworkMap() {
       startPrompt.hidden = false;
     }
   } catch (error) {
-    // Keep the page free of visible copy, but report the actual failure in DevTools.
     console.error("ASCII artwork failed to load:", error);
     artText.data = "";
   }
 }
 
-// ResizeObserver handles viewport changes beyond window.resize on mobile.
-// Older browsers use the window resize listener below as a compatibility fallback.
 if (typeof ResizeObserver === "function") {
   const resizeObserver = new ResizeObserver(refreshLayout);
   resizeObserver.observe(stage);
@@ -834,8 +790,6 @@ const handleMotionPreferenceChange = () => {
     setArtAtRest();
     renderFrame(0, false);
   } else if (!startRequested) {
-    // If reduced motion was turned off before a manual start, return to the
-    // prompt state rather than starting the idle animation without audio.
     experienceStarted = false;
     hasEntered = false;
     startPrompt.hidden = false;

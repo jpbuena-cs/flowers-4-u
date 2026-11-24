@@ -139,3 +139,27 @@ Do not change the repository's visibility, configure a custom domain, create a d
 ## 7. Release decision
 
 **Not published.** The release build and user-side tests are complete. GitHub Pages remains disabled until the user confirms public visibility and explicitly approves publication.
+
+
+## Code cleanup and repository naming
+
+### Code comments and README
+
+- Removed all standalone line comments from `src/main.js` and `scripts/build-site.mjs`.
+- Checked `index.html` and `styles.css`; no HTML or CSS comments were present.
+- Replaced the root `README.md` with the project directory tree only.
+
+### Possible repository rename
+
+The user is considering renaming `sumosobra-kana` to `flowers-4-u`. No rename has been performed.
+
+The current runtime uses relative resource paths and the build helper resolves files relative to its own location, so the project files do not depend on the repository slug. The standard project Pages path will, however, use the new repository name.
+
+GitHub redirects the old repository URL and ordinary Git operations to the renamed repository, but it does not redirect the project's published Pages URL. Existing local clones should update their `origin` remote after a rename.
+
+Because Pages is currently disabled, the least disruptive order is to settle the final repository name before enabling Pages.
+
+Official guidance:
+
+- [Renaming a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/renaming-a-repository)
+- [Creating a GitHub Pages site](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)
