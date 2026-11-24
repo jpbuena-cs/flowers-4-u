@@ -12,7 +12,9 @@
 | Main movement | Entire ASCII hand enters from below the viewport | “Creep up” means the complete hand moves into the website view, not that the raised finger articulates. |
 | Entrance timing | 1.8-second delay, then a 4.8-second ease with a tiny settle | Gives the blank page a brief pause before a deliberate, unhurried entrance. |
 | Entrance easing | Gradual ease-in/ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
-| Living-image idle | Tiny wrist-led rotation, fractional-cell drift, and subtle breathing scale | Adds life during and after entrance without shaking the whole image. |
+| Living-image idle | Slow wrist-led weight shift, non-synchronized breathing/drift cycles, and soft local fabric movement around palm folds and cuff | Adds quiet presence while protecting the finger silhouette and avoiding a rigid, metronomic loop. |
+| Idle scale and drift | Sub-character amplitudes; different cycle lengths for tilt, scale, and drift | Keeps movement barely noticeable and prevents the whole image from wobbling. |
+| Local fabric movement | Overlapping Gaussian masks over palm and cuff; no hard segmentation or independent rigging | Suggests fabric settling while retaining the flattened-image approach. |
 | Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
 | Motion accessibility | Static, centered frame for reduced-motion preference | Avoids movement when a user requests reduced motion. |
 | Dependencies | Native HTML, CSS, JavaScript only | Small static project; no framework or library is needed. |

@@ -217,21 +217,26 @@ function renderFrame(elapsed, animated) {
     : -1;
   const lines = new Array(rows);
 
-  // Living-portrait idle: a tiny wrist-led pivot and fractional-cell drift.
-  // Keep these movements smaller than one character cell.
-  const idlePhase = (elapsed / 18500) * TAU;
-  const idleAngle = isMoving ? Math.sin(idlePhase) * 0.0022 : 0;
+  // Living-portrait idle: a slow, wrist-led weight shift with independent
+  // breathing and drift cycles. The amplitudes stay below one character cell,
+  // and the different cycle lengths prevent a mechanical, synchronized loop.
+  const idlePhase = (elapsed / 19600) * TAU;
+  const idleAngle = isMoving ? Math.sin(idlePhase + 0.35) * 0.0031 : 0;
   const cosine = Math.cos(idleAngle);
   const sine = Math.sin(idleAngle);
-  const breathPhase = (elapsed / 23000) * TAU;
-  const scaleX = isMoving ? 1 + Math.sin(breathPhase) * 0.00125 : 1;
-  const scaleY = isMoving ? 1 + Math.sin(breathPhase + 1.15) * 0.0009 : 1;
-  const driftX = isMoving ? Math.sin((elapsed / 14500) * TAU + 0.6) * 0.2 : 0;
-  const driftY = isMoving ? Math.sin((elapsed / 17200) * TAU + 2.0) * 0.22 : 0;
+  const breathPhase = (elapsed / 12800) * TAU;
+  const scaleX = isMoving ? 1 + Math.sin(breathPhase) * 0.0018 : 1;
+  const scaleY = isMoving ? 1 + Math.sin(breathPhase + 1.25) * 0.00125 : 1;
+  const driftX = isMoving
+    ? Math.sin((elapsed / 17700) * TAU + 0.6) * 0.26
+      + Math.sin((elapsed / 29300) * TAU + 1.9) * 0.055
+    : 0;
+  const driftY = isMoving ? Math.sin((elapsed / 21400) * TAU + 2.0) * 0.25 : 0;
 
   // The wrist/cuff is the quiet pivot point for the hand's idle movement.
   const pivotX = columns * 0.53;
   const pivotY = rows * 0.81;
+  const motionScale = Math.sqrt(columns / SOURCE_COLUMNS);
 
   for (let y = 0; y < rows; y += 1) {
     const line = new Array(columns);
@@ -241,8 +246,37 @@ function renderFrame(elapsed, animated) {
       // Inverse transform creates the slight organic motion inside the art.
       const relativeX = x - driftX - pivotX;
       const relativeY = y - driftY - pivotY;
-      const sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
-      const sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
+      let sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
+      let sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
+
+      if (isMoving) {
+        // A soft, overlapping warp in the palm folds and cuff suggests cloth
+        // settling under its own weight. Gaussian masks have no hard borders;
+        // the movement remains far smaller than a character cell.
+        const palmDx = (x - columns * 0.535) / (columns * 0.19);
+        const palmDy = (y - rows * 0.49) / (rows * 0.19);
+        const palmMask = Math.exp(-1.65 * (palmDx * palmDx + palmDy * palmDy));
+        const cuffDx = (x - columns * 0.57) / (columns * 0.17);
+        const cuffDy = (y - rows * 0.81) / (rows * 0.075);
+        const cuffMask = Math.exp(-1.8 * (cuffDx * cuffDx + cuffDy * cuffDy));
+        const horizontalPosition = x / Math.max(1, columns - 1);
+        const verticalPosition = y / Math.max(1, rows - 1);
+        const palmFoldWave = Math.sin(
+          elapsed * 0.00034 + horizontalPosition * 3.8 + verticalPosition * 2.2,
+        );
+        const cuffSettleWave = Math.sin(
+          elapsed * 0.00027 + horizontalPosition * 2.6 - verticalPosition * 1.7 + 0.8,
+        );
+
+        sourceX += motionScale * (
+          palmMask * palmFoldWave * 0.16 + cuffMask * cuffSettleWave * 0.085
+        );
+        sourceY += motionScale * (
+          palmMask * Math.cos(elapsed * 0.00031 + horizontalPosition * 3.1) * 0.105
+          + cuffMask * Math.cos(elapsed * 0.00024 + verticalPosition * 2.8) * 0.06
+        );
+      }
+
       const source = samplePixel(sourceX, sourceY);
       let value = source;
 

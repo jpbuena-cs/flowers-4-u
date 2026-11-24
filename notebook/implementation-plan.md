@@ -20,21 +20,31 @@
 
 ## Motion pipeline
 
-1. Render the complete ASCII hand while positioning its text container below the viewport, outside the visible frame.
+1. Render the complete ASCII hand below the viewport.
 2. Wait 1.8 seconds after the map is ready.
 3. Start the fabric-light sweep and subtle living-portrait idle movement.
-4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 4.8 seconds.
-5. Use a gentle ease-in/ease-out curve for the main rise, then a very small settle to exact center. Avoid visible bouncing.
-6. Keep the fabric light and quiet hand idle looping after the entrance has completed.
-7. Pause motion while the document is hidden and honor prefers-reduced-motion.
+4. At the same moment, move the complete hand upward into its centered resting position over 4.8 seconds.
+5. Use a gradual ease-in/ease-out curve for the entrance, then a very small settle to exact center.
+6. Continue the fabric-light sweep and living-portrait idle after the entrance.
+
+### Living-portrait idle
+
+- Use a slow wrist-led weight shift as the main pose movement.
+- Give wrist tilt, horizontal drift, vertical drift, and breathing scale separate cycle lengths so the result does not feel metronomic.
+- Keep global movement below one character cell.
+- Add only a very small, feathered local fabric warp in the palm-fold and cuff areas. The masks have soft edges; no independent finger rig or hard segmentation is used.
+- Keep the finger silhouette and overall pose stable.
+- Scale local movement for the mobile grid.
+- Disable all continuous motion when prefers-reduced-motion is enabled.
+- Pause the animation when the document is hidden.
 
 ## Implementation constraints
 
-- The entrance moves the complete ASCII artwork via the Web Animations API transform. It does not reshape or separately animate the raised finger.
-- The source is one flattened image; the tiny idle movement remains a restrained image-grid remap, not true layered parallax.
-- The entrance offset is calculated from the viewport and rendered art height, so the complete text image begins below the frame on desktop and mobile.
+- The entrance moves the complete ASCII artwork via the Web Animations API transform.
+- The source is one flattened image; local palm/cuff motion is a subtle image-grid remap, not true layered parallax.
+- The entrance offset is calculated from the viewport and rendered art height.
 - If the page is hidden during the entrance, pause and resume the same entrance rather than restarting it.
-- If the grid dimensions or fitted font size change before the entrance completes, recalculate the offscreen position for the new text dimensions.
+- If grid dimensions or fitted font size change before the entrance completes, recalculate the offscreen position.
 - Reduced-motion preference shows the complete image immediately in its final position.
 - Keep the page artwork-only: no visible text, interface controls, menus, navigation, or sound.
 
@@ -63,16 +73,27 @@
 - [x] Add a tiny, restrained settle into exact center without a noticeable bounce.
 - [x] Preserve the concurrent fabric-light and living-portrait animations.
 - [x] Pause/resume the same entrance if the tab becomes hidden.
+- [x] Validate desktop, mobile, reduced-motion, and responsive resize in Chromium.
 - [ ] Review entrance speed and settling on the user's own devices.
 
-### M4 — Next refinements
+### M4 — Phase 2 living-portrait refinement
 
-See [roadmap.md](./roadmap.md) for the ordered phases:
-1. Finish user review of Phase 1.
-2. Improve the living-portrait effect.
-3. Refine the ASCII rendering.
-4. Check performance and compatibility.
-5. Prepare the final presentation and release.
+- [x] Tune wrist-led weight shift.
+- [x] Desynchronize the drift, tilt, and breathing cycles.
+- [x] Add a soft local fabric warp around palm folds and cuff.
+- [x] Keep the raised finger and overall silhouette stable.
+- [x] Preserve the fabric-light sweep.
+- [x] Verify desktop and mobile rendering in Chromium.
+- [x] Verify reduced-motion output stays static.
+- [ ] Review subtlety and fabric quality on the user's own devices.
+
+### M5 — Next refinements
+
+See [roadmap.md](./roadmap.md) for the remaining phases:
+1. Finish user review of Phase 2.
+2. Refine the ASCII rendering.
+3. Check performance and compatibility.
+4. Prepare the final presentation and release.
 
 Optional regional motion is exploratory and should only be considered after the current motion has been reviewed on the user's devices.
 
@@ -85,6 +106,8 @@ Optional regional motion is exploratory and should only be considered after the 
 - Entrance moves upward into the centered final position.
 - Entrance eases naturally and settles without a conspicuous bounce.
 - Fabric light and subtle portrait motion are active during entrance.
+- Whole-hand idle motion remains below one character cell.
+- Palm/cuff micro-motion has soft boundaries and does not distort the finger silhouette.
 - Entrance does not replay after completion or when a hidden tab becomes visible again.
 - Reduced-motion preference produces an immediate static frame.
 - Hidden tabs stop requesting animation frames.

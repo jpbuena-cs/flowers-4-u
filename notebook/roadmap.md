@@ -2,7 +2,7 @@
 
 ## Current stage
 
-The static ASCII rendering and first entrance animation are implemented. The project is in **Phase 1 — Polish the entrance**.
+Phase 1's entrance has been refined and browser-validated. The project has moved into **Phase 2 — Improve the living-portrait effect**. Phase 1's final review on the user's own devices remains open, but the explicit request to proceed with Phase 2 has been followed.
 
 The page's core rule remains unchanged: the ASCII artwork is the entire website. There should be no visible copy, controls, menus, navigation, or sound.
 
@@ -18,34 +18,43 @@ Refinements implemented:
 
 - The hand begins completely below the visible viewport.
 - The initial pause remains 1.8 seconds.
-- The entrance duration is now 4.8 seconds.
-- The main movement uses a gentle ease-in/ease-out arc and finishes with a tiny, restrained settling adjustment.
+- The entrance duration is 4.8 seconds.
+- The main movement uses a gradual ease-in/ease-out arc and finishes with a tiny, restrained settling adjustment.
 - No conspicuous bounce or overshoot.
 - Fabric lighting and subtle portrait motion run throughout the entrance.
 - The exact centered resting position is committed after the entrance completes.
-- The initial and final positions are designed to avoid clipping on desktop and mobile.
+- Chromium checks passed at desktop and mobile viewport sizes.
 
 Remaining review:
 
 - Check the entrance speed and settling feel on the user's own desktop and phone.
-- Confirm the entire artwork starts outside the frame at different aspect ratios. Chromium checks passed at 1440 × 900 and 390 × 844.
-- Tune duration or easing only in response to observed behavior. A viewport-height resize before entrance now recalculates the offscreen position even when the desktop/mobile character count stays the same.
+- Confirm the entire artwork starts outside the frame at different aspect ratios.
+- Tune duration or easing only in response to observed behavior.
 
 **Completion criteria:** the whole hand emerges smoothly from below the frame, settles cleanly in the center, and does not feel rushed or mechanical.
 
 ### Phase 2 — Improve the living-portrait effect
 
-**Priority: after Phase 1 approval**
+**Status: first implementation pass complete; user-device review pending**
 
-Make the otherwise still hand feel quietly alive.
+Make the otherwise still hand feel quietly alive without looking like a floating or wobbling sticker.
 
-Planned refinements:
+Refinements implemented:
 
-- Keep wrist-led movement extremely subtle.
-- Tune fractional-character drift and breathing-like scale so they are perceptible only on a second look.
-- Explore tiny localized shifts around glove folds and fabric areas only if they improve the image.
-- Preserve the hand's recognizable silhouette and avoid making it look like a floating or wobbling sticker.
-- Keep the existing fabric-light sweep as a separate continuous layer of motion.
+- Tuned the wrist-led pivot into a slow, gentle weight shift.
+- Gave horizontal drift, vertical drift, tilt, and breathing scale different cycle lengths so they do not repeat in lockstep.
+- Kept all whole-hand movement below one character cell.
+- Added a very small, feathered fabric warp around the palm folds and wrist cuff. It suggests cloth settling under its own weight, without introducing hard region borders or separately rigging the finger.
+- Kept the raised finger and overall silhouette stable.
+- Preserved the existing fabric-light sweep as a separate continuous effect.
+- Scaled the localized movement for the smaller mobile character grid.
+- Preserved reduced-motion behavior: the complete artwork remains static when requested.
+
+Remaining review:
+
+- Check whether the idle motion is noticeable only on a second look on the user's own devices.
+- Confirm the palm and cuff movement feels like soft fabric, not rippling or distortion.
+- Adjust or remove localized movement if it weakens the recognizable glove folds.
 
 **Completion criteria:** the hand feels gently animated while the composition remains steady. The idle movement must never compete with the entrance or the artwork itself.
 
@@ -123,4 +132,4 @@ Constraints and risks:
 
 ## Current next action
 
-Get the user's feedback on the refined Phase 1 entrance. Do not begin Phase 2 or regional segmentation until the entrance has been reviewed.
+Get the user's feedback on the Phase 2 living-portrait motion, especially the subtle weight shift and localized palm/cuff movement. Do not begin Phase 3 until this motion has been reviewed.
