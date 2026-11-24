@@ -402,8 +402,9 @@ async function loadArtworkMap() {
 
     buildSampleGrid();
     startAnimation({ enter: true });
-  } catch {
-    // Keep the page empty rather than showing fallback copy or interface text.
+  } catch (error) {
+    // Keep the page free of visible copy, but report the actual failure in DevTools.
+    console.error("ASCII artwork failed to load:", error);
     output.textContent = "";
   }
 }

@@ -75,3 +75,21 @@ Desktop and mobile preview images were generated locally from the exact characte
 2. Tune the ramp or tonal settings only if the preview reveals a specific issue.
 3. Move to Phase 4 only after the rendering is accepted.
 4. Keep GitHub Pages disabled until explicit approval.
+
+
+## Blank-page repair — 2026-11-24
+
+### Root cause
+
+- The Phase 3 gzip map stored on GitHub failed its gzip CRC check. The loader caught the decompression error and silently emptied the output element, making the website appear as a blank page.
+- The generated local map was valid: it decompresses to 144 rows × 144 characters, uses 95 unique supported characters, and has the expected Git blob SHA \`e09dbf1198eacc24f6a7b28501ab83143ac9ab11\`.
+
+### Repair
+
+- Replaced \`assets/glove-map.txt.gz\` with the verified local gzip asset. Its Git blob SHA was checked before committing.
+- Changed the loader's catch block to write the error to the browser console while keeping the page itself free of visible error text.
+
+### User run note
+
+- Serve the repository root through HTTP, for example \`python -m http.server 8000\`, then open \`http://localhost:8000/\`.
+- Opening \`index.html\` directly with a \`file://\` URL can prevent browser module and asset fetches, which also results in an empty page.
