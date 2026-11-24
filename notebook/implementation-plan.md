@@ -64,9 +64,9 @@ The source crop, resampling, character-ramp comparison, and tonal settings are d
 - If the page is hidden during the entrance, pause and resume the same entrance rather than restarting it.
 - If grid dimensions or fitted font size change before the entrance completes, recalculate the offscreen position.
 - Reduced-motion preference shows the complete image immediately in its final position.
-- Keep the page free of explanatory copy, menus, and navigation. The only interface control is the small, text-like monospace [ click to begin ] button shown before the entrance; the only persistent extra visual is the inline-SVG Jaypee signature.
-- Synthesize the one-shot entrance scrape with the native Web Audio API, beginning 260ms before the 4.8-second entrance when audio is permitted.
-- Attempt playback automatically, but account for autoplay restrictions by unlocking audio on the first natural pointer or keyboard interaction. Never display a sound button or instructions.
+- Keep the page free of explanatory copy, menus, and navigation. The only interface control is the small, centered monospace “click me” label on a transparent full-viewport semantic button; any tap/click in the viewport activates it. The only persistent extra visual is the inline-SVG Jaypee signature.
+- Use the restored, previously preferred heavy-object scrape with the native Web Audio API, beginning 260ms before the 4.8-second entrance after a user gesture.
+- Resume AudioContext synchronously inside the “click me” button activation to satisfy browser user-activation requirements. A statechange listener retries a pending sound if the context is temporarily suspended and later resumes.
 - Cancel pending sound under reduced-motion preference and fade active sound when the document becomes hidden.
 - No frameworks, external libraries, downloaded fonts, external assets, or network requests at runtime.
 

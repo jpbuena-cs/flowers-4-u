@@ -4,7 +4,7 @@
 
 Phases 1–3 have been implemented and the user has approved the entrance and living-portrait motion. Phase 4 has its first performance and compatibility implementation pass; physical-device verification remains open.
 
-The page remains a minimalist, artwork-first experience: the animated ASCII hand is central, with a small “Jaypee” maker's signature in the lower-left and one original entrance sound. The only temporary control is a compact monospace [ click to begin ] prompt; no explanatory copy, menus, or navigation are shown.
+The page remains a minimalist, artwork-first experience: the animated ASCII hand is central, with a small “Jaypee” maker's signature in the lower-left and one original entrance sound. The only temporary control is a centered monospace “click me” label on a transparent full-viewport button; no explanatory copy, menus, or navigation are shown.
 
 ## Priority order
 
@@ -104,9 +104,9 @@ Remaining review:
 
 **Status: implementation pass complete; user review pending**
 
-- Add a short original stone-drag scrape beginning 260ms before the hand enters.
+- Restore the previous smoother heavy-object drag sound, with its low rumble and continuous gritty scrape, beginning 260ms before the hand enters.
 - Synthesize the sound with native Web Audio nodes; do not add a downloaded audio file, framework, or library.
-- Use the compact monospace [ click to begin ] control as the explicit audio-unlock gesture and entrance trigger. Keep it visually text-like rather than a filled or bordered button.
+- Use a centered monospace “click me” label on a transparent full-viewport button as the explicit audio-unlock gesture and entrance trigger. Any tap/click anywhere on the screen activates it.
 - Add a quiet handwritten-style Jaypee signature at the lower-left using inline SVG paths.
 - Respect reduced-motion preference and pause/fade audio when the document is hidden.
 

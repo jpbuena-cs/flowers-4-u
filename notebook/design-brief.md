@@ -14,9 +14,9 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 - Soft off-white characters (#e5e5e2).
 - One monospace family, with no decorative typography.
 - Art centered in the viewport with generous negative space.
-- No explanatory text, headings, labels, menus, navigation, decorative borders, cards, or loading indicators. The only temporary control is the compact monospace [ click to begin ] prompt.
+- No explanatory text, headings, labels, menus, navigation, decorative borders, cards, or loading indicators. The only temporary control is the centered monospace “click me” prompt, presented as a transparent button that accepts clicks and taps anywhere in the viewport.
 - A small, muted handwritten-style signature reading “Jaypee” sits in the lower-left corner.
-- An original, low, rough stone-drag sound begins shortly before the entrance when browser audio policy permits it. No music or sound loop.
+- The previously preferred smoother heavy-object drag sound, with a low rumble and continuous gritty scrape, begins shortly before the entrance after the visitor activates “click me”. No music or sound loop.
 - No gradients or effects outside the character rendering itself.
 
 ## Character rendering
@@ -54,7 +54,7 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 
 The source is a single flattened image. The entry is a translation of the complete ASCII artwork, not an independent finger rig. The subtle idle movement is a small remapping of the ASCII brightness grid.
 
-The “Jaypee” signature is a small inline SVG path with explicit dimensions and no-fill stroke attributes, avoiding font dependency, text reflow, and default SVG fill behavior. The entrance sound is synthesized with the native Web Audio API and does not require an external audio file. Because browsers may block audible autoplay, the page also unlocks audio on the first natural pointer or keyboard interaction; no button or instruction is added to the page.
+The “Jaypee” signature is a small inline SVG path with explicit dimensions and no-fill stroke attributes, avoiding font dependency, text reflow, and default SVG fill behavior. The entrance sound is synthesized with the native Web Audio API and does not require an external audio file. Because browsers may block audible autoplay, the centered “click me” control is a real full-viewport semantic button. Its activation resumes the AudioContext directly during the user gesture; the visible label remains small, while the entire screen is tappable.
 
 ## Tone
 

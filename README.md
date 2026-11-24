@@ -44,7 +44,7 @@ Then open http://localhost:8000.
 - Targets 24 character-grid updates per second.
 - Precomputes static motion masks per grid size, reuses a typed output buffer, and updates a retained text node to reduce per-frame work.
 - Shows a static rendering when reduced motion is enabled and pauses the animation while the document is hidden.
-- Waits for a small monospace [ click to begin ] prompt. Tapping it unlocks audio and starts the entrance; a crude, irregular stone-on-stone drag begins just before the hand moves.
+- Waits for a centered monospace “click me” prompt. The whole page is tappable; activating it unlocks audio and starts the entrance. The original smoother heavy-object drag sound begins just before the hand moves.
 - Draws a small, muted handwritten-style “Jaypee” signature in the lower-left corner using explicitly sized, no-fill inline SVG strokes.
 - Uses native browser APIs only. No framework, external font download, library, or third-party network request.
 

@@ -69,6 +69,7 @@ function getAudioContext() {
 
   try {
     audioContext = new AudioContextConstructor();
+    audioContext.addEventListener?.("statechange", handleAudioContextStateChange);
   } catch (error) {
     console.warn("Entrance sound could not be initialized:", error);
     return null;
@@ -88,7 +89,12 @@ async function beginExperience() {
   const context = getAudioContext();
   if (context) {
     try {
-      if (context.state !== "running") await context.resume();
+      // Invoke resume immediately during the user gesture, then await the
+      // result before starting the entrance countdown.
+      const resumePromise = context.state === "running"
+        ? Promise.resolve()
+        : context.resume();
+      await resumePromise;
       audioUnlocked = context.state === "running";
     } catch (error) {
       audioUnlocked = false;
@@ -106,6 +112,18 @@ async function beginExperience() {
   // The normal 1.8-second entrance delay starts after the user's tap. The
   // scrape is scheduled 260ms before the hand begins moving.
   startAnimation({ enter: true });
+}
+
+function handleAudioContextStateChange() {
+  if (
+    audioContext
+    && audioContext.state === "running"
+    && soundPending
+    && !soundPlayed
+    && isVisible
+  ) {
+    attemptEntranceSound();
+  }
 }
 
 function stopEntranceSound() {
@@ -155,133 +173,97 @@ function playStoneDrag(durationSeconds) {
 
   const master = context.createGain();
   master.gain.setValueAtTime(0.0001, startAt);
-  master.gain.linearRampToValueAtTime(0.34, startAt + 0.12);
-  master.gain.setValueAtTime(0.31, Math.max(startAt + 0.2, endAt - 0.36));
+  master.gain.linearRampToValueAtTime(0.36, startAt + 0.14);
+  master.gain.setValueAtTime(0.32, Math.max(startAt + 0.2, endAt - 0.42));
   master.gain.linearRampToValueAtTime(0.0001, endAt);
   master.connect(context.destination);
 
-  // Seeded noise gives the same crude stone texture on every run. Small
-  // irregular changes in grain amplitude keep it from sounding like a loop.
+  // A single seeded noise bed feeds two filters: a gritty, rough scrape and
+  // a low rolling rumble. The seed keeps the character of the joke consistent.
   const frameCount = Math.ceil(context.sampleRate * duration);
   const noiseBuffer = context.createBuffer(1, frameCount, context.sampleRate);
   const noise = noiseBuffer.getChannelData(0);
-  let seed = 0x5f3759df;
-  const random = () => {
+  let seed = 0x6d2b79f5;
+  for (let i = 0; i < frameCount; i += 1) {
     seed ^= seed << 13;
     seed ^= seed >>> 17;
     seed ^= seed << 5;
-    return (seed >>> 0) / 0xffffffff;
-  };
-
-  for (let i = 0; i < frameCount; i += 1) {
-    const time = i / context.sampleRate;
-    const roughness = 0.66
-      + Math.sin(time * 43.7 + 0.7) * 0.13
-      + Math.sin(time * 71.3 + 1.9) * 0.09;
-    const grainDrop = random() > 0.986 ? 0.22 : 0.82 + random() * 0.18;
-    noise[i] = (random() * 2 - 1) * roughness * grainDrop;
+    noise[i] = ((seed >>> 0) / 0xffffffff) * 2 - 1;
   }
 
   const noiseSource = context.createBufferSource();
   noiseSource.buffer = noiseBuffer;
 
-  // Main scrape: lower, rougher and less polished than a metallic sweep.
   const scrapeFilter = context.createBiquadFilter();
   scrapeFilter.type = "bandpass";
-  scrapeFilter.Q.setValueAtTime(1.35, startAt);
-  scrapeFilter.frequency.setValueAtTime(520, startAt);
-  scrapeFilter.frequency.linearRampToValueAtTime(245, startAt + duration * 0.52);
-  scrapeFilter.frequency.linearRampToValueAtTime(390, endAt - 0.12);
+  scrapeFilter.Q.setValueAtTime(0.82, startAt);
+  scrapeFilter.frequency.setValueAtTime(680, startAt);
+  scrapeFilter.frequency.linearRampToValueAtTime(310, startAt + duration * 0.46);
+  scrapeFilter.frequency.linearRampToValueAtTime(570, endAt - 0.12);
 
   const scrapeGain = context.createGain();
   scrapeGain.gain.setValueAtTime(0.0001, startAt);
-  scrapeGain.gain.linearRampToValueAtTime(0.19, startAt + 0.18);
-  scrapeGain.gain.linearRampToValueAtTime(0.13, startAt + duration * 0.5);
-  scrapeGain.gain.linearRampToValueAtTime(0.18, endAt - 0.32);
+  scrapeGain.gain.linearRampToValueAtTime(0.22, startAt + 0.22);
+  scrapeGain.gain.linearRampToValueAtTime(0.12, startAt + duration * 0.48);
+  scrapeGain.gain.linearRampToValueAtTime(0.19, endAt - 0.36);
   scrapeGain.gain.linearRampToValueAtTime(0.0001, endAt);
-
-  // Upper-mid band adds a dry gritty rasp, with uneven little bursts as the
-  // stone catches and skips over ridges instead of sliding smoothly.
-  const gritFilter = context.createBiquadFilter();
-  gritFilter.type = "bandpass";
-  gritFilter.Q.setValueAtTime(2.4, startAt);
-  gritFilter.frequency.setValueAtTime(1480, startAt);
-  gritFilter.frequency.linearRampToValueAtTime(620, startAt + duration * 0.58);
-  gritFilter.frequency.linearRampToValueAtTime(1120, endAt - 0.1);
-
-  const gritGain = context.createGain();
-  gritGain.gain.setValueAtTime(0.0001, startAt);
-  let gritCursor = 0.075;
-  while (gritCursor < duration - 0.16) {
-    const when = startAt + gritCursor;
-    const attack = 0.009 + random() * 0.025;
-    const hold = 0.02 + random() * 0.05;
-    const peak = 0.055 + random() * 0.075;
-
-    gritGain.gain.linearRampToValueAtTime(peak, when + attack);
-    gritGain.gain.setValueAtTime(peak * (0.32 + random() * 0.24), when + attack + hold);
-    gritGain.gain.linearRampToValueAtTime(0.0001, when + attack + hold + 0.025);
-
-    gritCursor += 0.13 + random() * 0.12;
-  }
 
   const rumbleFilter = context.createBiquadFilter();
   rumbleFilter.type = "lowpass";
-  rumbleFilter.frequency.setValueAtTime(205, startAt);
-  rumbleFilter.frequency.linearRampToValueAtTime(82, startAt + duration * 0.64);
-  rumbleFilter.frequency.linearRampToValueAtTime(118, endAt);
-
+  rumbleFilter.frequency.setValueAtTime(155, startAt);
+  rumbleFilter.frequency.linearRampToValueAtTime(92, endAt);
   const rumbleGain = context.createGain();
   rumbleGain.gain.setValueAtTime(0.0001, startAt);
-  rumbleGain.gain.linearRampToValueAtTime(0.16, startAt + 0.26);
-  rumbleGain.gain.linearRampToValueAtTime(0.11, endAt - 0.3);
+  rumbleGain.gain.linearRampToValueAtTime(0.2, startAt + 0.3);
+  rumbleGain.gain.linearRampToValueAtTime(0.12, endAt - 0.35);
   rumbleGain.gain.linearRampToValueAtTime(0.0001, endAt);
 
   noiseSource.connect(scrapeFilter);
   scrapeFilter.connect(scrapeGain);
   scrapeGain.connect(master);
-
-  noiseSource.connect(gritFilter);
-  gritFilter.connect(gritGain);
-  gritGain.connect(master);
-
   noiseSource.connect(rumbleFilter);
   rumbleFilter.connect(rumbleGain);
   rumbleGain.connect(master);
 
-  // A subdued sub-bass body supports the weight of the stone; the irregular
-  // contact knocks carry the uneven-rock character, not a sustained musical tone.
+  // Low, slightly detuned tones make the scrape feel like a heavy object
+  // taking its weight and dragging, rather than a bright metallic clang.
   const bodyOscillator = context.createOscillator();
   bodyOscillator.type = "sine";
-  bodyOscillator.frequency.setValueAtTime(38, startAt);
-  bodyOscillator.frequency.linearRampToValueAtTime(27, startAt + duration * 0.6);
-  bodyOscillator.frequency.linearRampToValueAtTime(33, endAt);
+  bodyOscillator.frequency.setValueAtTime(48, startAt);
+  bodyOscillator.frequency.linearRampToValueAtTime(34, startAt + duration * 0.58);
+  bodyOscillator.frequency.linearRampToValueAtTime(40, endAt);
   const bodyGain = context.createGain();
   bodyGain.gain.setValueAtTime(0.0001, startAt);
-  bodyGain.gain.linearRampToValueAtTime(0.075, startAt + 0.17);
-  bodyGain.gain.linearRampToValueAtTime(0.05, endAt - 0.25);
+  bodyGain.gain.linearRampToValueAtTime(0.105, startAt + 0.16);
+  bodyGain.gain.linearRampToValueAtTime(0.065, endAt - 0.3);
   bodyGain.gain.linearRampToValueAtTime(0.0001, endAt);
   bodyOscillator.connect(bodyGain);
   bodyGain.connect(master);
 
-  const thud = (when, frequency, peak, decay) => {
-    const oscillator = context.createOscillator();
-    oscillator.type = "triangle";
-    oscillator.frequency.setValueAtTime(frequency, when);
-    oscillator.frequency.exponentialRampToValueAtTime(
-      Math.max(24, frequency * 0.52),
-      when + decay,
-    );
+  const secondaryOscillator = context.createOscillator();
+  secondaryOscillator.type = "triangle";
+  secondaryOscillator.frequency.setValueAtTime(73, startAt);
+  secondaryOscillator.frequency.linearRampToValueAtTime(61, endAt);
+  const secondaryGain = context.createGain();
+  secondaryGain.gain.setValueAtTime(0.0001, startAt);
+  secondaryGain.gain.linearRampToValueAtTime(0.025, startAt + 0.18);
+  secondaryGain.gain.linearRampToValueAtTime(0.0001, endAt);
+  secondaryOscillator.connect(secondaryGain);
+  secondaryGain.connect(master);
 
+  const thud = (when, frequency, peak) => {
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, when);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, frequency * 0.58), when + 0.24);
     const gain = context.createGain();
     gain.gain.setValueAtTime(0.0001, when);
-    gain.gain.linearRampToValueAtTime(peak, when + 0.014);
-    gain.gain.exponentialRampToValueAtTime(0.0001, when + decay);
-
+    gain.gain.linearRampToValueAtTime(peak, when + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.34);
     oscillator.connect(gain);
     gain.connect(master);
     oscillator.start(when);
-    oscillator.stop(when + decay + 0.025);
+    oscillator.stop(when + 0.36);
     activeSoundSources.push(oscillator);
   };
 
@@ -289,18 +271,12 @@ function playStoneDrag(durationSeconds) {
   noiseSource.stop(endAt + 0.04);
   bodyOscillator.start(startAt);
   bodyOscillator.stop(endAt + 0.04);
-  activeSoundSources = [noiseSource, bodyOscillator];
+  secondaryOscillator.start(startAt);
+  secondaryOscillator.stop(endAt + 0.04);
+  activeSoundSources = [noiseSource, bodyOscillator, secondaryOscillator];
 
-  // Uneven clunks: randomized spacing, pitch and decay simulate a heavy stone
-  // catching on protruding rock edges as it is dragged across the floor.
-  let impactCursor = 0.11;
-  while (impactCursor < duration - 0.42) {
-    const frequency = 38 + random() * 43;
-    const peak = 0.045 + random() * 0.055;
-    const decay = 0.12 + random() * 0.11;
-    thud(startAt + impactCursor, frequency, peak, decay);
-    impactCursor += 0.24 + random() * 0.43;
-  }
+  thud(startAt + 0.025, 57, 0.16);
+  thud(startAt + Math.min(1.25, duration * 0.36), 43, 0.075);
 
   activeSoundMaster = master;
   soundPlayed = true;
@@ -314,11 +290,10 @@ function playStoneDrag(durationSeconds) {
     try {
       scrapeFilter.disconnect();
       scrapeGain.disconnect();
-      gritFilter.disconnect();
-      gritGain.disconnect();
       rumbleFilter.disconnect();
       rumbleGain.disconnect();
       bodyGain.disconnect();
+      secondaryGain.disconnect();
       master.disconnect();
     } catch {
       // Audio nodes may already be disconnected by browser cleanup.
@@ -327,6 +302,7 @@ function playStoneDrag(durationSeconds) {
 
   return true;
 }
+
 function attemptEntranceSound() {
   if (!soundPending || soundPlayed || REDUCED_MOTION.matches || !isVisible) return;
 

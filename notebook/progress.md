@@ -148,12 +148,12 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - User should reload the local page once normally; a hard refresh may be needed if the browser has cached the old HTML document itself.
 
 
-## Click-to-begin prompt and rougher stone-drag sound — 2026-11-24
+## Centered click-me prompt and restored preferred sound — 2026-11-24
 
 ### Interaction change
 
 - The ASCII hand no longer begins its entrance automatically when the character map finishes loading.
-- A compact \`[ click to begin ]\` prompt is shown near the bottom center. It uses a real HTML button for keyboard and assistive-technology support, but is styled as plain monospace text with no filled background or button border.
+- A compact monospace “click me” prompt is shown at the exact center of the viewport. It uses a real HTML button for keyboard and assistive-technology support, but is styled as plain monospace text with no filled background or button border.
 - The hand remains outside the viewport while the prompt is shown.
 - Activating the prompt calls AudioContext.resume() directly inside the click gesture, then starts the existing 1.8-second entrance delay.
 - The scrape still begins 260ms before the hand starts entering.
@@ -163,7 +163,7 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 
 ### Sound redesign
 
-- Replaced the smoother scrape/tonal sound with a rougher, more crude stone-on-stone texture.
+- The rougher revision was not preferred and has been reverted to the earlier smoother heavy-object drag sound.
 - Added upper-mid filtered grit with irregular short gain bursts to suggest the stone catching against rough edges.
 - Kept a low, dull rumble and subtle sub-bass body for weight.
 - Replaced the two evenly spaced smooth thuds with irregular triangle-wave contact knocks whose timing, pitch, and decay vary deterministically.
@@ -182,3 +182,37 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - CSS checks confirm transparent background, no border, compact monospace lettering, a 44px minimum touch target, and visible keyboard-focus styling.
 - The 95-character ramp, source gzip map, entrance motion values, signature SVG, and existing render pipeline are preserved.
 - These are syntax, CSS/source, and controlled-runtime checks. The sound has not been auditioned through the user's physical speakers in this environment, so its final loudness and roughness remain subject to user review.
+
+
+## Centered click-me interaction, restored sound, and reload reliability — 2026-11-24
+
+### Interaction
+
+- The visible prompt is exactly \`click me\`, lowercase, in centered monospace text.
+- The actual semantic button fills the stage with a transparent hit area. Tapping/clicking anywhere on the viewport activates it, not only the label.
+- The label is visually small with no fill or border. The full-screen button remains keyboard-accessible and uses a subtle text underline for keyboard focus.
+- The hand remains outside the frame until activation.
+- A rapid second click does not create a second entrance.
+
+### Sound restoration
+
+- Restored \`playStoneDrag()\` byte-for-byte from the user's preferred earlier revision in commit \`2489683\`.
+- Reverted the later irregular stone-on-stone grit pulses and clustered impacts.
+- Kept the 260ms sound lead before the hand entrance.
+
+### Audio behavior on refresh
+
+- A full page reload creates a new JavaScript runtime. \`soundPlayed\` and \`soundPending\` are ordinary in-memory variables and are not persisted, so the sound is eligible to play again on each visit.
+- The centered full-screen button's click handler creates the AudioContext and calls \`resume()\` directly during the user's click/tap gesture.
+- Added a state-change listener to retry a still-pending sound if the browser suspends the AudioContext and later returns it to the running state during the entrance window.
+- Updated stylesheet and module URLs to the \`click-me-2\` query version so cached resources do not keep the previous prompt or audio logic.
+- Browser policy still prevents guaranteed sound before user activation. The supported behavior is: reload the page, then tap/click anywhere once.
+
+### Validation
+
+- Compiled the complete JavaScript module after substituting a test URL for \`import.meta.url\`; no duplicate top-level declarations were found.
+- Verified that the restored sound function matches the preferred previous implementation exactly.
+- Ran two isolated fresh-page simulations. Both created a new AudioContext, resumed it from the click handler, played the noise buffer, and scheduled sound 260ms before entrance.
+- Verified the full-screen transparent button style (\`inset: 0\`, \`width: 100%\`, \`height: 100%\`) and centered label layout.
+- Confirmed the 95-character ramp, compressed map, hand renderer, and Jaypee signature remain unchanged.
+- Physical browser/speaker testing remains with the user; browser policies and system mute/volume settings can still affect actual playback.

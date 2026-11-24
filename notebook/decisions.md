@@ -22,8 +22,8 @@
 | Entrance easing | Gradual ease-in/ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
 | Living-image idle | Slow wrist-led weight shift, non-synchronized breathing/drift cycles, and soft local fabric movement around palm folds and cuff | Adds quiet presence while protecting the finger silhouette and avoiding a rigid, metronomic loop. |
 | Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
-| Entrance sound | Coarse synthesized stone-on-stone scrape with irregular grit bursts and dull impacts begins 260ms before the entrance | Sounds like a heavy stone catching and dragging over an uneven rock surface without a downloaded audio file. |
-| Start interaction | A compact monospace [ click to begin ] control explicitly unlocks Web Audio and starts the entrance | Gives users a clear, deliberate audio gesture without a large conventional button. |
+| Entrance sound | Restore the previous synthesized heavy-object drag sound, with continuous grit and a low rumble, beginning 260ms before the entrance | The user preferred the previous sound over the more irregular, crude version. |
+| Start interaction | A centered monospace “click me” label is the visible face of a transparent full-viewport button | Any tap/click anywhere on the page explicitly unlocks Web Audio and starts the entrance without a conventional button surface. |
 | Signature rendering | Inline SVG strokes, muted opacity, fixed lower-left placement | Keeps the signature consistent across systems without downloading a cursive font. |
 | Motion accessibility | Static, centered frame for reduced-motion preference; pause the loop while the document is hidden | Avoids continuous motion when requested and reduces background work. |
 | Dependencies | Native HTML, CSS, JavaScript and Web Audio API only | Small static project; no framework, library, or external audio file is needed. |
