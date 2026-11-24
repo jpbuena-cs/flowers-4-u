@@ -6,7 +6,7 @@
 - styles.css: viewport centering, monochrome palette, monospace typography, and overflow control.
 - src/main.js: text-map loading, responsive sampling, luminance mapping, procedural idle motion, entrance timing, and reduced-motion handling.
 - assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the user-provided glove image.
-- notebook/: project intent, settled choices, implementation notes, and progress.
+- notebook/: project intent, settled choices, implementation notes, roadmap, and progress.
 
 ## Rendering pipeline
 
@@ -33,6 +33,7 @@
 - The entrance offset is calculated from the viewport and rendered art height, so the complete text image begins below the frame on desktop and mobile.
 - On resize before the first entrance, recalculate the offscreen offset. Once the entrance has happened, do not replay it.
 - Reduced-motion preference shows the complete image immediately in its final position.
+- Keep the page artwork-only: no visible text, interface controls, menus, navigation, or sound.
 
 ## Milestones
 
@@ -41,7 +42,7 @@
 - [x] Add a precomputed high-density character map.
 - [x] Verify browser rendering and viewport fit at desktop and mobile sizes.
 
-### M2 — Entrance and idle animation
+### M2 — Entrance and idle animation baseline
 
 - [x] Position the complete hand below the viewport at initial load.
 - [x] Add a short delay before the entrance starts.
@@ -50,14 +51,17 @@
 - [x] Keep the idle and fabric motions running after the entrance.
 - [x] Remove the previously misunderstood independent finger-lift deformation.
 - [x] Keep reduced-motion output static and centered.
-- [ ] Review entrance speed and easing on the user's own devices.
 
-### M3 — Delivery
+### M3 — Refinement roadmap
 
-- [x] Keep the public page free of visible interface copy.
-- [x] Keep project documentation in notebook/.
-- [ ] Review on a physical mobile device.
-- [ ] Enable GitHub Pages only after the user approves publication.
+See [roadmap.md](./roadmap.md) for the ordered next phases:
+1. Polish the entrance.
+2. Improve the living-portrait effect.
+3. Refine the ASCII rendering.
+4. Check performance and compatibility.
+5. Prepare the final presentation and release.
+
+Optional regional motion is exploratory and should only be considered after the current motion has been reviewed on the user's devices.
 
 ## Validation checklist
 
@@ -70,3 +74,4 @@
 - Entrance does not repeat when returning to a visible tab after completion.
 - Reduced-motion preference produces an immediate static frame.
 - Hidden tabs stop requesting animation frames.
+- GitHub Pages remains disabled until explicit user approval.
