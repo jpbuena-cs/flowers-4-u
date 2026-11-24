@@ -96,7 +96,7 @@ The source crop, resampling, character-ramp comparison, and tonal settings are d
 - [x] Preserve the concurrent fabric-light and living-portrait animations.
 - [x] Pause/resume the same entrance if the tab becomes hidden.
 - [x] Validate the responsive source grid.
-- [ ] Review entrance speed and settling on the user's own devices.
+- [x] User reviewed the entrance on the intended devices and reports that it works correctly.
 
 ### M4 — Phase 2 living-portrait refinement
 
@@ -131,9 +131,8 @@ The source crop, resampling, character-ramp comparison, and tonal settings are d
 - [x] Skip missed frame intervals after a stall.
 - [x] Add ResizeObserver and MediaQueryList compatibility fallbacks.
 - [x] Run static source-integrity checks on the updated implementation.
-- [ ] Verify the optimized build in the user's browser at desktop and mobile sizes.
-- [ ] Check a lower-powered physical device and a longer animation session.
-- [ ] Confirm reload, reduced-motion, hidden-tab resume, and viewport/orientation changes on the user's devices.
+- [x] User verified the optimized release build on desktop and mobile.
+- [x] User reports completing the intended device, reload, orientation, and interaction checks with no issues.
 
 ### M7 — Phase 5 release preparation
 
@@ -144,10 +143,10 @@ The source crop, resampling, character-ramp comparison, and tonal settings are d
 - [x] Exclude the notebook, source reference image, README, and dev scripts from the deployable artifact.
 - [x] Keep generated dist/ output out of Git.
 - [x] Verify GitHub Pages is not enabled and do not deploy.
-- [ ] Review the dist/ artifact in the user's desktop browser.
-- [ ] Review on a physical mobile device, including orientation, touch, entrance, and sound.
-- [ ] Confirm the account plan / visibility route for hosting this currently private repository.
-- [ ] Obtain explicit user approval before configuring or enabling GitHub Pages.
+- [x] User reviewed the actual dist/ artifact in a desktop browser.
+- [x] User reviewed the release build on a physical mobile device, including the requested interaction and presentation checks.
+- [ ] Confirm that the user approves a publicly accessible website and choose the Pages eligibility route for the private source repository.
+- [ ] Obtain explicit publication approval before configuring or enabling GitHub Pages.
 
 See [roadmap.md](./roadmap.md) and [phase-5-release.md](./phase-5-release.md).
 

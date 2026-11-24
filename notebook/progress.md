@@ -260,3 +260,14 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - Ran the build helper against a temporary project fixture. It produced exactly the four allow-listed paths and excluded the fixture's notebook and README.
 - Ran a controlled desktop animation-state test using the current src/main.js: 144 × 144 grid, click-start/audio unlock, sound lead exactly 260ms, 4.8-second entrance, keyframe offsets at 0 / 0.88 / 0.965 / 1, 12 distinct rendered frames, exact centered resting transform after finish, and continued idle rendering after settle. All assertions passed.
 - The fixture test is not a substitute for running the build against the real working tree. The first real dist/ build and browser preview remain on the user's release checklist.
+
+
+## Phase 5 — User-device review completed — 2026-11-24
+
+- User reports testing the prepared release build and all requested scenarios, and confirms everything works correctly.
+- Desktop release artifact review is complete.
+- Physical mobile review is complete.
+- No further code or design changes were requested.
+- Marked Phase 4 real-device verification and Phase 5 build/device review as complete in the roadmap and implementation plan.
+- The GitHub repository remains private and GitHub Pages remains disabled.
+- The only remaining Phase 5 gate is the publication decision: confirm public website visibility, confirm the eligible hosting route for the private repository, and obtain explicit approval before enabling Pages.

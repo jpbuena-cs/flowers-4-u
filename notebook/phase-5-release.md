@@ -3,7 +3,7 @@
 **Repository:** `dash011905-cs/sumosobra-kana`  
 **Branch checked:** `main`  
 **Review date:** 2026-11-24  
-**Status:** release-build path prepared; actual dist/ preview, physical-device review, and publication approval pending
+**Status:** release build and user-device review complete; hosting choice and publication approval pending
 
 ## 1. Release scope
 
@@ -33,7 +33,7 @@ The current source implements this sequence:
 
 Reduced-motion preference keeps the static centered artwork and skips the prompt and entrance sound. The animation loop pauses when the document is hidden.
 
-Source review confirms these states and timings. The recent click/audio flow was exercised in two isolated fresh-page simulations. A separate controlled desktop-renderer smoke test also produced 12 distinct frames, applied the 4.8-second entrance keyframes, committed the exact resting transform, and continued rendering after the settle. These controlled checks are not a substitute for final playback and visual inspection in the user's own browsers.
+Source review confirms these states and timings. The recent click/audio flow was exercised in two isolated fresh-page simulations. A separate controlled desktop-renderer smoke test also produced 12 distinct frames, applied the 4.8-second entrance keyframes, committed the exact resting transform, and continued rendering after the settle. The user has since tested the release build on their actual devices and reports that everything works correctly.
 
 ## 3. Page-content audit
 
@@ -82,7 +82,7 @@ Then open `http://localhost:8000`.
 
 Generated `dist/` is ignored by Git and is not committed.
 
-The build helper passed `node --check` and a temporary fixture test. The fixture produced exactly the four allow-listed files and excluded a sample notebook and README. The first build using the real repository files, followed by a local browser preview, remains a user-side review step.
+The build helper passed `node --check` and a temporary fixture test. The fixture produced exactly the four allow-listed files and excluded a sample notebook and README. The user reports running and reviewing the real release build locally, with all requested checks passing.
 
 ## 5. GitHub Pages compatibility and visibility
 
@@ -95,7 +95,7 @@ Repository inspection on 2026-11-24 found:
 - Root `index.html` is present.
 - The page uses project-relative resource paths. The module's map URL resolves relative to `src/main.js`, so the same directory structure is preserved under a project-site path such as `/<repository-name>/`.
 
-GitHub's current documentation says Pages is available for public repositories on GitHub Free, and for private repositories on GitHub Pro, Team, or Enterprise. A published Pages site is publicly accessible on the internet, even when the source repository is private.
+GitHub's current documentation says Pages is available for public repositories on GitHub Free, and for public or private repositories on GitHub Pro, Team, and Enterprise. A standard published Pages site is publicly accessible on the internet, even when the source repository is private. This project has not been configured for private site access.
 
 Official references:
 
@@ -122,18 +122,20 @@ Do not change the repository's visibility, configure a custom domain, create a d
 - [x] Build helper passes Node syntax validation and a temporary fixture test.
 - [x] GitHub Pages is not enabled.
 
-### Requires user-side review
+### User-side review — complete
 
-- [ ] Run the build and inspect `dist/` on desktop.
-- [ ] Complete a fresh-load / click / sound / entrance test in the normal browser.
-- [ ] Repeat the test on a physical phone.
-- [ ] Check mobile portrait and landscape orientation.
-- [ ] Check touch anywhere, including edges of the screen.
-- [ ] Listen to the entrance sound on the actual device.
-- [ ] Check a lower-powered device if available.
-- [ ] Confirm account plan and desired public/private hosting arrangement.
+- [x] User ran the build and inspected `dist/` on desktop.
+- [x] User tested a fresh load, click/touch start, sound, and entrance.
+- [x] User tested the release build on a physical phone.
+- [x] User checked the requested mobile layout and interaction scenarios.
+- [x] User reports that all tested scenarios work correctly.
+
+### Publication decision — pending
+
+- [ ] Confirm that the website may be publicly accessible.
+- [ ] Confirm the GitHub plan and the route that preserves the desired source-repository visibility.
 - [ ] Explicitly approve publication before Pages is configured.
 
 ## 7. Release decision
 
-**Not published.** This phase prepares and documents a clean deployable artifact only. GitHub Pages remains disabled.
+**Not published.** The release build and user-side tests are complete. GitHub Pages remains disabled until the user confirms public visibility and explicitly approves publication.

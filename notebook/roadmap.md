@@ -2,7 +2,7 @@
 
 ## Current stage
 
-Phases 1–3 have been implemented and the user has approved the entrance and living-portrait motion. Phase 4 has its first performance and compatibility implementation pass; physical-device verification remains open.
+Phases 1–4 are implemented, and the user has approved the entrance, living-portrait motion, and optimized rendering. The user has now tested the release build across the intended desktop and mobile scenarios and reports that everything works. Phase 5 release preparation is complete; only hosting choice and explicit publication approval remain.
 
 The page remains a minimalist, artwork-first experience: the animated ASCII hand is central, with a small “Jaypee” maker's signature in the lower-left and one original entrance sound. The only temporary control is a centered monospace “click me” label on a transparent full-viewport button; no explanatory copy, menus, or navigation are shown.
 
@@ -10,7 +10,7 @@ The page remains a minimalist, artwork-first experience: the animated ASCII hand
 
 ### Phase 1 — Polish the entrance
 
-**Status: implementation refined and browser-validated; user-device review pending**
+**Status: implementation refined and user-device review complete**
 
 The hand should feel as though it is making a calm entrance into the scene, not simply sliding into place.
 
@@ -70,7 +70,7 @@ Refinements implemented:
 
 ### Phase 4 — Performance and compatibility
 
-**Status: first optimization pass implemented; real-device verification pending**
+**Status: optimization implemented; user reports real-device verification passed**
 
 Make the animation dependable across common devices without changing its appearance or adding dependencies.
 
@@ -88,21 +88,18 @@ Refinements implemented:
 - Preserve the entrance, living-portrait movement, fabric lighting, reduced-motion behavior, and hidden-tab pausing.
 - Keep all work local, with no framework, external library, downloaded font, remote asset, or audio.
 
-Remaining review:
+User-device review complete:
 
-- Test a fresh load and the complete entrance on the user's desktop and phone.
-- Check whether animation remains smooth on a lower-powered device.
-- Inspect frame pacing and memory use during a longer session.
-- Verify the output remains centered and unclipped at several viewport sizes and orientations.
-- Verify reduced-motion and tab hide/show behavior on the user's actual browsers.
+- The user reports testing the finished release build and all requested desktop/mobile scenarios, with everything working correctly.
+- No device-specific issues were reported, so no additional rendering or motion changes are needed at this stage.
 
 **Compatibility note:** the gzip loader uses the native DecompressionStream API, which is widely available in modern browsers. Legacy browser versions from before broad support may not render the page. No fallback decompressor or additional library is included.
 
-**Completion criteria:** the page renders consistently, does not introduce horizontal scrolling or clipping, and remains responsive during the animation. Do not mark Phase 4 fully closed until physical-device checks have been done.
+**Completion criteria:** met according to the user's completed desktop and mobile review. Phase 4 is closed; only future issues actually observed by the user should reopen it.
 
 ### Current polish — Entrance sound and signature
 
-**Status: implementation pass complete; user review pending**
+**Status: implementation and user review complete**
 
 - Restore the previous smoother heavy-object drag sound, with its low rumble and continuous gritty scrape, beginning 260ms before the hand enters.
 - Synthesize the sound with native Web Audio nodes; do not add a downloaded audio file, framework, or library.
@@ -114,7 +111,7 @@ Remaining review:
 
 ### Phase 5 — Final presentation and release preparation
 
-**Status: release-build path prepared; actual dist/ preview, physical-device review, and publishing approval remain open**
+**Status: release artifact and user-device review complete; hosting choice and publication approval remain open**
 
 Prepare the repository for publication without exposing development notes or enabling hosting prematurely.
 
@@ -127,17 +124,20 @@ Completed in this pass:
 - Added /dist/ to .gitignore so generated output is not accidentally committed.
 - Confirmed the repository is currently private and GitHub reports Pages as not enabled.
 
+Completed user review:
+
+- The user confirms that the release build and all requested desktop/mobile tests work correctly.
+- No further implementation changes were requested.
+
 Remaining sign-off:
 
-- Review the built dist/ site on the user's actual desktop browser.
-- Review on a physical phone, including orientation/resizing, touch-to-start, entrance, and sound.
-- Review on a lower-powered device if available.
-- Confirm the user's GitHub plan and hosting visibility choice before configuring Pages.
-- Obtain explicit approval before any publishing setup or deployment.
+- Decide whether the website should be publicly accessible.
+- Confirm the GitHub plan / repository visibility route before configuring Pages.
+- Obtain explicit approval before enabling Pages or deploying.
 
 **Hosting note:** GitHub Pages is available for public repositories on GitHub Free, and for private repositories on qualifying paid plans. A published Pages site is publicly accessible on the internet, even when its source repository is private. Do not change repository visibility or enable Pages in this phase.
 
-**Completion criteria:** the selected release artifact passes local desktop and physical mobile review, the hosting/visibility choice is understood, and the user explicitly approves publication.
+**Completion criteria:** release artifact and user-device review are complete. Phase 5 can close after the hosting/visibility choice is confirmed and the user explicitly approves or declines publication.
 
 ## Optional exploration — regional motion
 
@@ -163,4 +163,4 @@ Constraints and risks:
 
 ## Current next action
 
-Run node scripts/build-site.mjs, serve dist/ locally, and review the exact release artifact on desktop and a physical phone. Then decide how the private repository should be hosted. Keep GitHub Pages disabled until the user explicitly approves publication.
+Confirm whether the user approves a publicly accessible website on GitHub Pages. Keep the source repository private if the account plan permits; do not change repository visibility or enable Pages without explicit approval.
