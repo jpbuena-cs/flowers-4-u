@@ -135,9 +135,21 @@ The source crop, resampling, character-ramp comparison, and tonal settings are d
 - [ ] Check a lower-powered physical device and a longer animation session.
 - [ ] Confirm reload, reduced-motion, hidden-tab resume, and viewport/orientation changes on the user's devices.
 
-### M7 — Next stage
+### M7 — Phase 5 release preparation
 
-See roadmap.md. Move to Phase 5 release preparation only after Phase 4 device review.
+- [x] Audit the entry sequence, prompt, audio unlock, sound timing, entrance easing, settle, and ongoing idle loop from the current source.
+- [x] Confirm the page shell contains no unintended visible copy or controls.
+- [x] Check relative paths for a GitHub Pages project-site subpath.
+- [x] Add a dependency-free release build script with an explicit runtime-file allow-list.
+- [x] Exclude the notebook, source reference image, README, and dev scripts from the deployable artifact.
+- [x] Keep generated dist/ output out of Git.
+- [x] Verify GitHub Pages is not enabled and do not deploy.
+- [ ] Review the dist/ artifact in the user's desktop browser.
+- [ ] Review on a physical mobile device, including orientation, touch, entrance, and sound.
+- [ ] Confirm the account plan / visibility route for hosting this currently private repository.
+- [ ] Obtain explicit user approval before configuring or enabling GitHub Pages.
+
+See [roadmap.md](./roadmap.md) and [phase-5-release.md](./phase-5-release.md).
 
 ## Validation checklist
 

@@ -35,3 +35,8 @@ Revisit the approved direction before changing the visible page to include expla
 
 
 | Signature resilience | Explicit SVG dimensions and presentation attributes plus a versioned stylesheet URL | Prevents stale browser CSS from stretching the mark or rendering the paths with the default solid fill. |
+
+
+| Release artifact | Build only index.html, styles.css, src/main.js, and assets/glove-map.txt.gz into dist/ | Prevents the private development notebook, source reference, and project README from being copied into the public site artifact. |
+| Release build | Node.js built-ins only; no runtime dependency or package manager | The website remains a plain static HTML/CSS/JS project; the build helper is development-only. |
+| Pages activation | Do not configure or deploy GitHub Pages before explicit user approval | The current repository is private, Pages is disabled, and published Pages content is publicly accessible. |

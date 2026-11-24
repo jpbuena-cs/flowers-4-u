@@ -114,20 +114,30 @@ Remaining review:
 
 ### Phase 5 — Final presentation and release preparation
 
-**Priority: after Phase 4 device review**
+**Status: release-build path prepared; actual dist/ preview, physical-device review, and publishing approval remain open**
 
-Prepare the repository for publication only after the experience is approved.
+Prepare the repository for publication without exposing development notes or enabling hosting prematurely.
 
-Planned refinements:
+Completed in this pass:
 
-- Test the complete sequence from a fresh page load.
-- Confirm the initial delay, entrance, settling, lighting, and idle motion work together.
-- Verify the website contains no unintended interface or text.
-- Review desktop and physical mobile-device behavior.
-- Check repository structure and GitHub Pages compatibility.
-- Enable GitHub Pages only after explicit user approval.
+- Audited the complete startup sequence: map load, centered click prompt, gesture-based audio unlock, sound lead-in, entrance delay, 4.8-second entrance, final settle, and continuous idle rendering.
+- Checked the page shell for unintended visible text or controls. The only intentional text is “click me”; the Jaypee mark is inline SVG and the hand remains character-rendered.
+- Confirmed the root index, local stylesheet, module script, and compressed map use project-relative paths suitable for a project site under /<repository-name>/.
+- Added a dependency-free build script that assembles an explicit four-file public-site allow-list into dist/ and excludes notebook/, the canonical source image, README files, and development scripts.
+- Added /dist/ to .gitignore so generated output is not accidentally committed.
+- Confirmed the repository is currently private and GitHub reports Pages as not enabled.
 
-**Completion criteria:** the finished page behaves as intended from first load through its continuous idle state and is ready for publication.
+Remaining sign-off:
+
+- Review the built dist/ site on the user's actual desktop browser.
+- Review on a physical phone, including orientation/resizing, touch-to-start, entrance, and sound.
+- Review on a lower-powered device if available.
+- Confirm the user's GitHub plan and hosting visibility choice before configuring Pages.
+- Obtain explicit approval before any publishing setup or deployment.
+
+**Hosting note:** GitHub Pages is available for public repositories on GitHub Free, and for private repositories on qualifying paid plans. A published Pages site is publicly accessible on the internet, even when its source repository is private. Do not change repository visibility or enable Pages in this phase.
+
+**Completion criteria:** the selected release artifact passes local desktop and physical mobile review, the hosting/visibility choice is understood, and the user explicitly approves publication.
 
 ## Optional exploration — regional motion
 
@@ -153,4 +163,4 @@ Constraints and risks:
 
 ## Current next action
 
-Have the user inspect the optimized build on their own desktop and phone, especially on a lower-powered device if available. Only close Phase 4 after that review; then proceed to Phase 5 release preparation.
+Run node scripts/build-site.mjs, serve dist/ locally, and review the exact release artifact on desktop and a physical phone. Then decide how the private repository should be hosted. Keep GitHub Pages disabled until the user explicitly approves publication.

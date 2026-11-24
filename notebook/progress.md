@@ -188,7 +188,7 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 
 ### Interaction
 
-- The visible prompt is exactly \`click me\`, lowercase, in centered monospace text.
+- The visible prompt is exactly `click me`, lowercase, in centered monospace text.
 - The actual semantic button fills the stage with a transparent hit area. Tapping/clicking anywhere on the viewport activates it, not only the label.
 - The label is visually small with no fill or border. The full-screen button remains keyboard-accessible and uses a subtle text underline for keyboard focus.
 - The hand remains outside the frame until activation.
@@ -196,23 +196,67 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 
 ### Sound restoration
 
-- Restored \`playStoneDrag()\` byte-for-byte from the user's preferred earlier revision in commit \`2489683\`.
+- Restored `playStoneDrag()` byte-for-byte from the user's preferred earlier revision in commit `2489683`.
 - Reverted the later irregular stone-on-stone grit pulses and clustered impacts.
 - Kept the 260ms sound lead before the hand entrance.
 
 ### Audio behavior on refresh
 
-- A full page reload creates a new JavaScript runtime. \`soundPlayed\` and \`soundPending\` are ordinary in-memory variables and are not persisted, so the sound is eligible to play again on each visit.
-- The centered full-screen button's click handler creates the AudioContext and calls \`resume()\` directly during the user's click/tap gesture.
+- A full page reload creates a new JavaScript runtime. `soundPlayed` and `soundPending` are ordinary in-memory variables and are not persisted, so the sound is eligible to play again on each visit.
+- The centered full-screen button's click handler creates the AudioContext and calls `resume()` directly during the user's click/tap gesture.
 - Added a state-change listener to retry a still-pending sound if the browser suspends the AudioContext and later returns it to the running state during the entrance window.
-- Updated stylesheet and module URLs to the \`click-me-2\` query version so cached resources do not keep the previous prompt or audio logic.
+- Updated stylesheet and module URLs to the `click-me-2` query version so cached resources do not keep the previous prompt or audio logic.
 - Browser policy still prevents guaranteed sound before user activation. The supported behavior is: reload the page, then tap/click anywhere once.
 
 ### Validation
 
-- Compiled the complete JavaScript module after substituting a test URL for \`import.meta.url\`; no duplicate top-level declarations were found.
+- Compiled the complete JavaScript module after substituting a test URL for `import.meta.url`; no duplicate top-level declarations were found.
 - Verified that the restored sound function matches the preferred previous implementation exactly.
 - Ran two isolated fresh-page simulations. Both created a new AudioContext, resumed it from the click handler, played the noise buffer, and scheduled sound 260ms before entrance.
-- Verified the full-screen transparent button style (\`inset: 0\`, \`width: 100%\`, \`height: 100%\`) and centered label layout.
+- Verified the full-screen transparent button style (`inset: 0`, `width: 100%`, `height: 100%`) and centered label layout.
 - Confirmed the 95-character ramp, compressed map, hand renderer, and Jaypee signature remain unchanged.
 - Physical browser/speaker testing remains with the user; browser policies and system mute/volume settings can still affect actual playback.
+
+
+## Phase 5 — Final presentation and release preparation — 2026-11-24
+
+### Repository and release review
+
+- Re-read the Phase 5 roadmap and implementation-plan acceptance criteria.
+- Audited the current startup flow: local compressed-map load, click-me prompt, audio unlock, 260ms sound lead, 1.8s pre-entry delay, 4.8s entrance, settling keyframes, and continuous rendering after the entrance.
+- Confirmed the reduced-motion path renders the centered static artwork without the prompt or entrance sound.
+- Confirmed the hidden-tab path pauses the animation and fades/stops active sound.
+- Confirmed the page shell has one ASCII output element, one inline SVG Jaypee signature, and one centered click-me button; no other visible page copy or navigation is present.
+- Confirmed root HTML uses local relative stylesheet/module URLs, and the module resolves the map relative to its own location.
+- Confirmed the repository has a root index.html, local stylesheet, local module, and gzip map asset.
+
+### GitHub Pages findings
+
+- Repository is private; the GitHub repository API reports `has_pages = false`.
+- No existing GitHub Actions workflow directory or Pages deployment workflow exists.
+- GitHub Pages can host static files, and the project's relative URLs are structurally suitable for a project-site path.
+- Publishing directly from the repository root would also put the notebook and reference files inside the published file tree. To avoid that, this phase adds a release build allow-list.
+
+### Release artifact preparation
+
+- Added `scripts/build-site.mjs`, a Node.js built-in-only helper that copies only index.html, styles.css, src/main.js, and assets/glove-map.txt.gz into `dist/`.
+- Added `.gitignore` entry for generated `/dist/`.
+- Added local preview instructions for serving the exact `dist/` artifact.
+- Added `notebook/phase-5-release.md` with the release checklist, hosting findings, and remaining sign-off items.
+- No runtime source files, ASCII map, signature, sound design, or visible page styling were changed in this phase.
+- No Pages workflow was added. GitHub Pages remains disabled.
+
+### Remaining release gates
+
+- User must run and inspect the `dist/` output on desktop and a physical phone, including portrait/landscape and actual audio playback.
+- GitHub's current plan rules mean public repositories can use Pages on GitHub Free; private repository Pages require a qualifying paid plan. Published Pages content is public on the internet. Repository visibility and hosting plan must be decided before publication.
+- Explicit publication approval is still required. No visibility or Pages settings were changed.
+
+
+
+### Phase 5 validation addendum
+
+- Syntax-checked scripts/build-site.mjs with Node.js 22.
+- Ran the build helper against a temporary project fixture. It produced exactly the four allow-listed paths and excluded the fixture's notebook and README.
+- Ran a controlled desktop animation-state test using the current src/main.js: 144 × 144 grid, click-start/audio unlock, sound lead exactly 260ms, 4.8-second entrance, keyframe offsets at 0 / 0.88 / 0.965 / 1, 12 distinct rendered frames, exact centered resting transform after finish, and continued idle rendering after settle. All assertions passed.
+- The fixture test is not a substitute for running the build against the real working tree. The first real dist/ build and browser preview remain on the user's release checklist.
