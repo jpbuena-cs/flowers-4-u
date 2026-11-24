@@ -7,8 +7,12 @@ const RAMP = " .-',:~\";^!_*+|=/\\)(r<>[]l?jv1cxzu7LYins}yJTt{Cfw%IVhFk2oX3mqdZ$
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
+const FINGER_LIFT_DELAY = 2800;
+const FINGER_LIFT_DURATION = 9200;
+const MAX_FINGER_LIFT = 4.6;
 const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
+const TAU = Math.PI * 2;
 
 const output = document.querySelector("#art");
 const measureCanvas = document.createElement("canvas");
@@ -24,6 +28,15 @@ let startTimer = 0;
 let lastFrameAt = 0;
 let animationStartedAt = 0;
 let isVisible = !document.hidden;
+
+function clamp(value, minimum, maximum) {
+  return Math.max(minimum, Math.min(maximum, value));
+}
+
+function smoothstep(edge0, edge1, value) {
+  const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
+  return t * t * (3 - 2 * t);
+}
 
 function getColumnTarget() {
   return window.matchMedia("(max-width: 640px)").matches ? 72 : 144;
@@ -99,26 +112,99 @@ function characterFor(value) {
   return RAMP[index];
 }
 
+function samplePixel(x, y) {
+  // Samples outside the map as black. This prevents edge pixels from smearing
+  // if the tiny idle drift moves the hand by a fraction of a character cell.
+  if (x < 0 || y < 0 || x > columns - 1 || y > rows - 1) return 0;
+
+  const x0 = Math.floor(x);
+  const y0 = Math.floor(y);
+  const x1 = Math.min(columns - 1, x0 + 1);
+  const y1 = Math.min(rows - 1, y0 + 1);
+  const fx = x - x0;
+  const fy = y - y0;
+
+  const top = pixels[y0 * columns + x0] * (1 - fx)
+    + pixels[y0 * columns + x1] * fx;
+  const bottom = pixels[y1 * columns + x0] * (1 - fx)
+    + pixels[y1 * columns + x1] * fx;
+
+  return top * (1 - fy) + bottom * fy;
+}
+
+function getFingerMask(x, y, sizeRatio) {
+  // The raised finger runs diagonally from the upper-left toward its knuckle.
+  // The feathered mask keeps the lift strongest at the fingertip and anchored
+  // where the finger joins the palm.
+  const fingerCenterX = (23 / SOURCE_COLUMNS) * columns + 0.58 * y;
+  const horizontalDistance = Math.abs(x - fingerCenterX);
+  const acrossFinger = 1 - smoothstep(8.5 * sizeRatio, 14 * sizeRatio, horizontalDistance);
+  const topFade = smoothstep(4 * sizeRatio, 10 * sizeRatio, y);
+  const baseFade = 1 - smoothstep(72 * sizeRatio, 89 * sizeRatio, y);
+  const towardTip = 1 - smoothstep(10 * sizeRatio, 88 * sizeRatio, y);
+
+  return acrossFinger * topFade * baseFade * towardTip;
+}
+
 function renderFrame(elapsed, animated) {
   if (!pixels) return;
 
-  const sweepPosition = animated
-    ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * Math.PI * 2)
+  const isMoving = animated && !REDUCED_MOTION.matches;
+  const sweepPosition = isMoving
+    ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * TAU)
     : -1;
+  const sizeRatio = columns / SOURCE_COLUMNS;
   const lines = new Array(rows);
+
+  // A portrait-style idle: the hand gently settles around its wrist rather
+  // than wobbling as one rigid sticker. The amplitudes stay below one cell.
+  const idlePhase = (elapsed / 18500) * TAU;
+  const idleAngle = isMoving ? Math.sin(idlePhase) * 0.0022 : 0;
+  const cosine = Math.cos(idleAngle);
+  const sine = Math.sin(idleAngle);
+  const breathPhase = (elapsed / 23000) * TAU;
+  const scaleX = isMoving ? 1 + Math.sin(breathPhase) * 0.00125 : 1;
+  const scaleY = isMoving ? 1 + Math.sin(breathPhase + 1.15) * 0.0009 : 1;
+  const driftX = isMoving ? Math.sin((elapsed / 14500) * TAU + 0.6) * 0.2 * sizeRatio : 0;
+  const driftY = isMoving ? Math.sin((elapsed / 17200) * TAU + 2.0) * 0.22 * sizeRatio : 0;
+
+  // The wrist/cuff is the quiet pivot point for the hand's tiny idle movement.
+  const pivotX = columns * 0.53;
+  const pivotY = rows * 0.81;
+
+  // The finger begins lifting only after the fabric-light movement is underway.
+  // It rises once, slowly, then holds its new pose while the idle loop continues.
+  const liftProgress = isMoving
+    ? smoothstep(0, 1, (elapsed - FINGER_LIFT_DELAY) / FINGER_LIFT_DURATION)
+    : 0;
+  const fingerLift = MAX_FINGER_LIFT * sizeRatio * liftProgress;
 
   for (let y = 0; y < rows; y += 1) {
     const line = new Array(columns);
     const vertical = y / Math.max(1, rows - 1);
 
     for (let x = 0; x < columns; x += 1) {
-      const horizontal = x / Math.max(1, columns - 1);
-      const source = pixels[y * columns + x];
+      // Inverse transform: tiny wrist-led sway, breathing scale, and drift.
+      const relativeX = x - driftX - pivotX;
+      const relativeY = y - driftY - pivotY;
+      let sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
+      let sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
+
+      if (liftProgress > 0) {
+        const fingerMask = getFingerMask(x, y, sizeRatio);
+        const localLift = fingerLift * fingerMask;
+        // Move along the finger's existing diagonal, not straight upward:
+        // this makes the fingertip creep up while its base stays attached.
+        sourceX += localLift * 0.58;
+        sourceY += localLift;
+      }
+
+      const source = samplePixel(sourceX, sourceY);
       let value = source;
 
-      if (animated && source > 8) {
-        // A broad, soft highlight travels across the cloth rather than
-        // behaving like a metallic reflection or a hard scanning bar.
+      if (isMoving && source > 8) {
+        // The soft highlight keeps moving underneath the hand's idle motion.
+        const horizontal = x / Math.max(1, columns - 1);
         const distance = (horizontal - sweepPosition) / 0.24;
         const softSweep = Math.exp(-0.5 * distance * distance);
         const fabricVariation = Math.sin(
@@ -128,7 +214,7 @@ function renderFrame(elapsed, animated) {
         value += softSweep * 8.5 + fabricVariation + slowBreath;
       }
 
-      line[x] = characterFor(Math.max(0, Math.min(255, value)));
+      line[x] = characterFor(clamp(value, 0, 255));
     }
 
     lines[y] = line.join("");

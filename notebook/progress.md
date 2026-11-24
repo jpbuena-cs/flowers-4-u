@@ -1,28 +1,27 @@
 # Progress
 
-## Prototype baseline — 2026-11-24
+## Motion pass — 2026-11-24
 
 ### Implemented
 
-- Minimal single-page shell with one HTML pre element.
-- A gzip-compressed 144 × 144 character map derived from the user-provided glove image.
-- A 94-character grayscale ramp, ordered by approximate glyph ink coverage.
-- Separate target widths for desktop (144 columns) and mobile (72 columns).
-- Mobile map reduction by averaging source cells.
-- Automatic animation after an approximately 1.8-second pause.
-- Smooth, back-and-forth moving cloth highlight and subtle tonal variation.
-- Reduced-motion static mode and pause-on-hidden-tab behavior.
-- No visible copy, controls, or external dependencies.
+- Preserved the existing automatic fabric-light sweep.
+- Added a one-way upward creep for the raised finger, starting 2.8 seconds after continuous animation begins and easing over 9.2 seconds.
+- The finger motion is limited to a feathered region. Displacement is strongest near the fingertip and fades toward the knuckle so the finger stays visually attached to the palm.
+- Added a subtle wrist-led idle motion: a very small pivot rotation, fractional-character drift, and near-imperceptible horizontal/vertical breathing scale.
+- The hand's motion and the fabric-light movement run concurrently.
+- The idle and fabric motions continue after the finger reaches its new pose.
+- Reduced-motion mode still renders a static frame.
 
-### Not yet verified
+### Browser validation
 
-- Actual browser rendering quality at desktop and mobile sizes. A local character-grid preview was inspected, but a headless browser screenshot could not be completed in this environment.
-- Whether the chosen glyph ramp produces the best fabric and seam detail in the user's browser font.
-- Animation smoothness on lower-powered mobile devices.
+- Chromium desktop viewport: rendered successfully; the character output changed during active animation; no page errors.
+- Chromium mobile viewport (390 × 844): rendered 72 columns × 72 rows; no page errors.
+- Reduced-motion preference: the rendered text remained unchanged during a 4-second check.
+- This is a programmatic remapping of a flattened image, not a true multi-layer parallax rig.
 
 ### Next work
 
-1. Open the page locally and inspect the actual ASCII rendering.
-2. Adjust character density and animation based on the rendered result, not guesswork.
-3. Check the resize and reduced-motion paths.
+1. Review the finger's final height and the amount of hand drift on the user's desktop and phone.
+2. Tune the finger mask if the transition at the knuckle looks stretched or detached.
+3. Consider a more sophisticated regional rig only if the current image-grid warp is visibly limiting the result.
 4. Ask for visual approval before enabling GitHub Pages.

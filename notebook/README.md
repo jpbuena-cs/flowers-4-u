@@ -5,9 +5,10 @@ This directory is the durable project memory. Update it when a design or technic
 ## Reading order
 
 1. [Design brief](./design-brief.md) — the intended experience and visual rules.
-2. [Decisions](./decisions.md) — accepted constraints and the reasons behind them.
-3. [Implementation plan](./implementation-plan.md) — architecture and next milestones.
-4. [Progress](./progress.md) — what exists, what was checked, and open questions.
+2. [Animation direction](./animation-direction.md) — motion references and the chosen living-illustration treatment.
+3. [Decisions](./decisions.md) — accepted constraints and the reasons behind them.
+4. [Implementation plan](./implementation-plan.md) — architecture and next milestones.
+5. [Progress](./progress.md) — what exists, what was checked, and open questions.
 
 ## Notebook rule
 
