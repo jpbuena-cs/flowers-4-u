@@ -4,8 +4,7 @@ const SOURCE_ROWS = 144;
 
 // Ordered from visually sparse to visually dense. The map uses this same ramp.
 // 95 glyphs sorted by average ink coverage across Liberation Mono and DejaVu Sans Mono.
-const RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HOconst RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HO$&D08gRNQWMB@";
-const TARGET_FPS = 24;D08gRNQWMB@";
+const RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HO$&D08gRNQWMB@";
 const CHARACTER_CODES = new Uint16Array(
   Array.from({ length: 256 }, (_, value) =>
     RAMP.charCodeAt(Math.round((value / 255) * (RAMP.length - 1))),

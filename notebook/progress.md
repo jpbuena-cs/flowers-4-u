@@ -77,3 +77,14 @@
 3. Close Phase 4 after the physical-device checks.
 4. Proceed to Phase 5 only after Phase 4 review.
 5. Keep GitHub Pages disabled until explicit approval.
+
+
+## Phase 4 syntax repair — 2026-11-24
+
+- A post-commit review found that src/main.js line 7 had been corrupted during the source-blob assembly step: the opening of the character-ramp declaration had been inserted into itself, and the tail of the ramp was duplicated into an otherwise stray line.
+- The stray line also contained a second malformed TARGET_FPS declaration fragment. The valid TARGET_FPS declaration was retained; the malformed fragment was removed.
+- Rebuilt the 95-character ramp declaration from the verified intended ramp and confirmed that it contains 95 unique characters.
+- Compiled the complete corrected JavaScript module after substituting a test base URL for import.meta.url.
+- Checked for duplicate top-level declarations.
+- Ran renderer smoke tests at 144 × 144 desktop, 72 × 72 mobile, and the legacy compatibility path without ResizeObserver and without MediaQueryList.addEventListener. All produced complete, uniform ASCII rows and changing animation frames without runtime errors.
+- Confirmed the gzip asset's Git blob SHA remains e09dbf1198eacc24f6a7b28501ab83143ac9ab11.
