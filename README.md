@@ -35,6 +35,6 @@ Then open http://localhost:8000.
 - Uses 144 columns on desktop and averages the map down to 72 columns on mobile.
 - Waits briefly before starting a restrained, continuous fabric-light animation.
 - Shows a static rendering when reduced motion is enabled.
-- Uses native browser APIs only. No framework, third-party font, library, external request, audio, or visible interface controls.
+- Uses native browser APIs only. No framework, third-party font, library, third-party network request, audio, or visible interface controls.
 
 GitHub Pages has not been configured or enabled as part of this prototype.
