@@ -122,3 +122,27 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - Verified the HTML contains no buttons, menus, or explanatory page copy; the requested signature is the only added visual.
 - The gzip map and 95-character ramp are unchanged. No downloaded sound file, remote font, or third-party request was added.
 - These are syntax and controlled-runtime checks, not tests on the user's physical browser or speakers. Browser autoplay may still require a first user gesture.
+
+
+## Signature rendering fix — 2026-11-24
+
+### Browser discrepancy
+
+- User reported that the normal browser rendered the new signature as a huge, solid-black shape, while the VS Code integrated browser displayed the page correctly.
+- The screenshot is consistent with a stale cached stylesheet: the new inline SVG had loaded, but the newer .signature-mark CSS rule that sets its fixed size, lower-left position, no-fill stroke appearance, and pointer behavior had not.
+- Without the stylesheet rule, an SVG without explicit dimensions can stretch as a grid item, and SVG paths default to a filled shape.
+
+### Fix
+
+- Added an explicit 108 × 38 SVG viewport size.
+- Added SVG presentation attributes for fill="none", muted stroke, stroke width, and rounded stroke joins/caps. These stay effective even when the stylesheet is stale.
+- Versioned the stylesheet URL as styles.css?v=signature-fix-2 to force a fresh stylesheet fetch in browsers with a cached previous file.
+- Kept the responsive lower-left CSS placement and mobile safe-area offsets.
+- Reduced the maximum signature width slightly to 108px.
+
+### Validation
+
+- Confirm the stylesheet URL is versioned and the SVG has explicit dimensions and presentation attributes.
+- Confirm the existing page remains free of visible explanatory text or controls.
+- Confirm the existing ASCII JavaScript, compressed map, and entrance sound are unchanged.
+- User should reload the local page once normally; a hard refresh may be needed if the browser has cached the old HTML document itself.

@@ -45,7 +45,7 @@ Then open http://localhost:8000.
 - Precomputes static motion masks per grid size, reuses a typed output buffer, and updates a retained text node to reduce per-frame work.
 - Shows a static rendering when reduced motion is enabled and pauses the animation while the document is hidden.
 - Plays an original, procedurally synthesized heavy stone-drag sound just before the entrance when browser audio policy permits it. A first click, tap, or key press unlocks audio without displaying a control.
-- Draws a small, muted handwritten-style “Jaypee” signature in the lower-left corner.
+- Draws a small, muted handwritten-style “Jaypee” signature in the lower-left corner using explicitly sized, no-fill inline SVG strokes.
 - Uses native browser APIs only. No framework, external font download, library, or third-party network request.
 
 The compressed map uses the native DecompressionStream API. It is broadly supported in modern browsers; older browser versions may not support it. Rendering parameters and palette comparisons are documented in notebook/ascii-rendering.md.

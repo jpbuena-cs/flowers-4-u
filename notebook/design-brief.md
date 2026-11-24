@@ -54,7 +54,7 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 
 The source is a single flattened image. The entry is a translation of the complete ASCII artwork, not an independent finger rig. The subtle idle movement is a small remapping of the ASCII brightness grid.
 
-The “Jaypee” signature is a small inline SVG path, avoiding font dependency or text reflow. The entrance sound is synthesized with the native Web Audio API and does not require an external audio file. Because browsers may block audible autoplay, the page also unlocks audio on the first natural pointer or keyboard interaction; no button or instruction is added to the page.
+The “Jaypee” signature is a small inline SVG path with explicit dimensions and no-fill stroke attributes, avoiding font dependency, text reflow, and default SVG fill behavior. The entrance sound is synthesized with the native Web Audio API and does not require an external audio file. Because browsers may block audible autoplay, the page also unlocks audio on the first natural pointer or keyboard interaction; no button or instruction is added to the page.
 
 ## Tone
 

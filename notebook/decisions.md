@@ -32,3 +32,6 @@
 ## Changes that require discussion
 
 Revisit the approved direction before changing the visible page to include explanatory copy, interface controls, color, audio, framework dependencies, or a different subject treatment.
+
+
+| Signature resilience | Explicit SVG dimensions and presentation attributes plus a versioned stylesheet URL | Prevents stale browser CSS from stretching the mark or rendering the paths with the default solid fill. |
