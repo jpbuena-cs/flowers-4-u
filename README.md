@@ -44,7 +44,7 @@ Then open http://localhost:8000.
 - Targets 24 character-grid updates per second.
 - Precomputes static motion masks per grid size, reuses a typed output buffer, and updates a retained text node to reduce per-frame work.
 - Shows a static rendering when reduced motion is enabled and pauses the animation while the document is hidden.
-- Plays an original, procedurally synthesized heavy stone-drag sound just before the entrance when browser audio policy permits it. A first click, tap, or key press unlocks audio without displaying a control.
+- Waits for a small monospace [ click to begin ] prompt. Tapping it unlocks audio and starts the entrance; a crude, irregular stone-on-stone drag begins just before the hand moves.
 - Draws a small, muted handwritten-style “Jaypee” signature in the lower-left corner using explicitly sized, no-fill inline SVG strokes.
 - Uses native browser APIs only. No framework, external font download, library, or third-party network request.
 

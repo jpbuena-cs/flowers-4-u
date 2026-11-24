@@ -146,3 +146,39 @@ Modern browsers commonly block audible autoplay without prior user activation. A
 - Confirm the existing page remains free of visible explanatory text or controls.
 - Confirm the existing ASCII JavaScript, compressed map, and entrance sound are unchanged.
 - User should reload the local page once normally; a hard refresh may be needed if the browser has cached the old HTML document itself.
+
+
+## Click-to-begin prompt and rougher stone-drag sound — 2026-11-24
+
+### Interaction change
+
+- The ASCII hand no longer begins its entrance automatically when the character map finishes loading.
+- A compact \`[ click to begin ]\` prompt is shown near the bottom center. It uses a real HTML button for keyboard and assistive-technology support, but is styled as plain monospace text with no filled background or button border.
+- The hand remains outside the viewport while the prompt is shown.
+- Activating the prompt calls AudioContext.resume() directly inside the click gesture, then starts the existing 1.8-second entrance delay.
+- The scrape still begins 260ms before the hand starts entering.
+- The prompt fades away once activated. It is disabled to prevent double starts.
+- Reduced-motion preference preserves the immediate static artwork behavior and skips the prompt and sound.
+- Removing the old document-wide pointer/keyboard unlock means unrelated taps no longer start or unlock the audio.
+
+### Sound redesign
+
+- Replaced the smoother scrape/tonal sound with a rougher, more crude stone-on-stone texture.
+- Added upper-mid filtered grit with irregular short gain bursts to suggest the stone catching against rough edges.
+- Kept a low, dull rumble and subtle sub-bass body for weight.
+- Replaced the two evenly spaced smooth thuds with irregular triangle-wave contact knocks whose timing, pitch, and decay vary deterministically.
+- The noise texture uses a seeded irregular grain envelope so each entrance is consistent but not mechanically smooth.
+- No external sound file, library, or remote resource was added.
+
+### Validation completed before commit
+
+- The complete JavaScript module compiled successfully after substituting a test base URL for import.meta.url.
+- No duplicate top-level declarations; the 95-character ramp and single TARGET_FPS declaration remain unchanged.
+- Verified that loading the map alone does not create entrance or sound timers. The hand remains offscreen and the start prompt stays visible.
+- In the normal mocked interaction path, clicking the prompt resumes the AudioContext, disables/fades the prompt, schedules the sound at 1,540ms, and schedules the entrance at 1,800ms. The 260ms lead remains intact.
+- The sound synthesis runtime test created the noise source, three filtered texture bands, and irregular low-frequency impact oscillators.
+- In the simulated AudioContext-resume failure path, the prompt still starts the entrance at 1,800ms, but no sound timer is scheduled.
+- Reduced-motion test confirms the artwork appears statically at rest, with no prompt and no entrance or sound timer.
+- CSS checks confirm transparent background, no border, compact monospace lettering, a 44px minimum touch target, and visible keyboard-focus styling.
+- The 95-character ramp, source gzip map, entrance motion values, signature SVG, and existing render pipeline are preserved.
+- These are syntax, CSS/source, and controlled-runtime checks. The sound has not been auditioned through the user's physical speakers in this environment, so its final loudness and roughness remain subject to user review.

@@ -14,7 +14,7 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 - Soft off-white characters (#e5e5e2).
 - One monospace family, with no decorative typography.
 - Art centered in the viewport with generous negative space.
-- No visible text, headings, labels, buttons, menus, navigation, borders, cards, or loading indicators.
+- No explanatory text, headings, labels, menus, navigation, decorative borders, cards, or loading indicators. The only temporary control is the compact monospace [ click to begin ] prompt.
 - A small, muted handwritten-style signature reading “Jaypee” sits in the lower-left corner.
 - An original, low, rough stone-drag sound begins shortly before the entrance when browser audio policy permits it. No music or sound loop.
 - No gradients or effects outside the character rendering itself.

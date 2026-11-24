@@ -99,3 +99,63 @@ body {
     opacity: 0.34;
   }
 }
+
+
+.start-prompt {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  min-height: 44px;
+  padding: 12px 14px;
+  transform: translateX(-50%);
+  appearance: none;
+  -webkit-appearance: none;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: rgba(220, 220, 214, 0.66);
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: 0.12em;
+  white-space: nowrap;
+  cursor: pointer;
+  opacity: 1;
+  transition: color 180ms ease, opacity 240ms ease;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+.start-prompt:hover {
+  color: rgba(235, 235, 228, 0.92);
+}
+
+.start-prompt:focus-visible {
+  outline: 1px dashed rgba(205, 205, 198, 0.62);
+  outline-offset: 2px;
+}
+
+.start-prompt.is-dismissed {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.start-prompt[hidden] {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .start-prompt {
+    bottom: max(12px, env(safe-area-inset-bottom));
+    font-size: 10px;
+    letter-spacing: 0.1em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .start-prompt {
+    transition: none;
+  }
+}
