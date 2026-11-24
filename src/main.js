@@ -7,7 +7,7 @@ const RAMP = " .-',:~\";^!_*+|=/\\)(r<>[]l?jv1cxzu7LYins}yJTt{Cfw%IVhFk2oX3mqdZ$
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
-const ENTRY_DURATION = 4600;
+const ENTRY_DURATION = 4800;
 const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 const TAU = Math.PI * 2;
@@ -21,6 +21,7 @@ let sourcePixels = null;
 let pixels = null;
 let columns = 0;
 let rows = 0;
+let currentFontSize = null;
 let animationFrame = 0;
 let startTimer = 0;
 let lastFrameAt = 0;
@@ -64,11 +65,15 @@ function buildSampleGrid() {
   );
   const gridChanged = targetColumns !== columns || targetRows !== rows || !pixels;
 
-  // Font size can change even when the mobile/desktop column target stays the same.
-  const fontSize = getFontSize(targetColumns, targetRows);
-  output.style.setProperty("--art-size", fontSize.toFixed(3) + "px");
+  // A viewport-height change can alter the fitted font size without crossing
+  // the mobile/desktop breakpoint. Track that too so the offscreen offset is
+  // recalculated before the first entrance.
+  const nextFontSize = getFontSize(targetColumns, targetRows);
+  const fontChanged = currentFontSize === null || Math.abs(nextFontSize - currentFontSize) > 0.02;
+  currentFontSize = nextFontSize;
+  output.style.setProperty("--art-size", nextFontSize.toFixed(3) + "px");
 
-  if (!gridChanged) return false;
+  if (!gridChanged) return fontChanged;
 
   columns = targetColumns;
   rows = targetRows;
@@ -169,7 +174,7 @@ function beginEntrance(offset) {
     {
       transform: "translate3d(0, " + offset + "px, 0)",
       offset: 0,
-      easing: "cubic-bezier(0.16, 0.76, 0.2, 1)",
+      easing: "cubic-bezier(0.42, 0, 0.58, 1)",
     },
     {
       transform: "translate3d(0, -2.5px, 0)",

@@ -26,7 +26,7 @@ The user's “slow moving upwards creep” means an entrance of the complete han
 
 - Initial position: entire text-art image below the bottom edge of the viewport.
 - Initial pause: approximately 1.8 seconds after the character map loads.
-- Entrance: 3.6-second ease-out upward movement.
+- Entrance: 4.8-second gradual ease-in/ease-out upward movement with a tiny final settle.
 - Fabric and idle animation: begin at the same time as the entrance.
 - After the entrance: hand remains centered; fabric-light and portrait idle continue indefinitely.
 

@@ -10,7 +10,7 @@ The page's core rule remains unchanged: the ASCII artwork is the entire website.
 
 ### Phase 1 — Polish the entrance
 
-**Status: implementation refined; user-device review pending**
+**Status: implementation refined and browser-validated; user-device review pending**
 
 The hand should feel as though it is making a calm entrance into the scene, not simply sliding into place.
 
@@ -18,8 +18,8 @@ Refinements implemented:
 
 - The hand begins completely below the visible viewport.
 - The initial pause remains 1.8 seconds.
-- The entrance duration is now 4.6 seconds.
-- The main movement eases out smoothly and finishes with a tiny, restrained settling adjustment.
+- The entrance duration is now 4.8 seconds.
+- The main movement uses a gentle ease-in/ease-out arc and finishes with a tiny, restrained settling adjustment.
 - No conspicuous bounce or overshoot.
 - Fabric lighting and subtle portrait motion run throughout the entrance.
 - The exact centered resting position is committed after the entrance completes.
@@ -28,8 +28,8 @@ Refinements implemented:
 Remaining review:
 
 - Check the entrance speed and settling feel on the user's own desktop and phone.
-- Confirm the entire artwork starts outside the frame at different aspect ratios.
-- Tune duration or easing only in response to observed behavior.
+- Confirm the entire artwork starts outside the frame at different aspect ratios. Chromium checks passed at 1440 × 900 and 390 × 844.
+- Tune duration or easing only in response to observed behavior. A viewport-height resize before entrance now recalculates the offscreen position even when the desktop/mobile character count stays the same.
 
 **Completion criteria:** the whole hand emerges smoothly from below the frame, settles cleanly in the center, and does not feel rushed or mechanical.
 

@@ -40,7 +40,7 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 - Render the complete ASCII hand below the visible viewport.
 - Wait approximately 1.8 seconds after the character map is ready.
 - Start the fabric-light sweep and subtle living-portrait idle movement as the hand begins entering.
-- The entire hand rises from below the bottom edge into its centered resting position over approximately 3.6 seconds.
+- The entire hand rises from below the bottom edge into its centered resting position over approximately 4.8 seconds, using a gradual ease-in/ease-out curve and a tiny, non-bouncy settle.
 - The hand does not articulate or independently lift its finger during this entrance. The gesture is already present in the source image; the whole hand is what enters the frame.
 - The fabric light moves smoothly back and forth with very subtle character-density changes.
 - While the hand is in view, a tiny wrist-led sway, sub-character drift, and near-imperceptible breathing scale keep the illustration feeling alive.

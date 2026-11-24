@@ -24,7 +24,7 @@
 2. Wait 1.8 seconds after the map is ready.
 3. Start the fabric-light sweep and subtle living-portrait idle movement.
 4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 4.6 seconds.
-5. Use a long ease-out for the main rise, then a very small settle to exact center. Avoid visible bouncing.
+5. Use a gentle ease-in/ease-out curve for the main rise, then a very small settle to exact center. Avoid visible bouncing.
 6. Keep the fabric light and quiet hand idle looping after the entrance has completed.
 7. Pause motion while the document is hidden and honor prefers-reduced-motion.
 
@@ -34,7 +34,7 @@
 - The source is one flattened image; the tiny idle movement remains a restrained image-grid remap, not true layered parallax.
 - The entrance offset is calculated from the viewport and rendered art height, so the complete text image begins below the frame on desktop and mobile.
 - If the page is hidden during the entrance, pause and resume the same entrance rather than restarting it.
-- If the grid dimensions change before the entrance completes, recalculate the offscreen position for the new text dimensions.
+- If the grid dimensions or fitted font size change before the entrance completes, recalculate the offscreen position for the new text dimensions.
 - Reduced-motion preference shows the complete image immediately in its final position.
 - Keep the page artwork-only: no visible text, interface controls, menus, navigation, or sound.
 
@@ -58,8 +58,8 @@
 
 ### M3 — Phase 1 entrance refinement
 
-- [x] Increase the entrance duration to 4.6 seconds.
-- [x] Replace the basic transition with a paced ease-out entrance.
+- [x] Increase the entrance duration to 4.8 seconds.
+- [x] Replace the basic transition with a gradual ease-in/ease-out entrance.
 - [x] Add a tiny, restrained settle into exact center without a noticeable bounce.
 - [x] Preserve the concurrent fabric-light and living-portrait animations.
 - [x] Pause/resume the same entrance if the tab becomes hidden.

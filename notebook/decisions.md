@@ -11,7 +11,7 @@
 | Conversion | Precomputed gzip-compressed text map | Keeps the page centered on ASCII data, avoids image decoding at runtime, and reduces transfer size; decompression uses a native browser API. |
 | Main movement | Entire ASCII hand enters from below the viewport | “Creep up” means the complete hand moves into the website view, not that the raised finger articulates. |
 | Entrance timing | 1.8-second delay, then a 4.6-second ease with a tiny settle | Gives the blank page a brief pause before a deliberate, unhurried entrance. |
-| Entrance easing | Smooth ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
+| Entrance easing | Gradual ease-in/ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
 | Living-image idle | Tiny wrist-led rotation, fractional-cell drift, and subtle breathing scale | Adds life during and after entrance without shaking the whole image. |
 | Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
 | Motion accessibility | Static, centered frame for reduced-motion preference | Avoids movement when a user requests reduced motion. |

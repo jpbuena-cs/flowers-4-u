@@ -3,10 +3,10 @@
 ## Reference file
 
 - Repository copy: [references/source-glove.png](./references/source-glove.png)
-- Original uploaded file: \`pic1(1).png\`
+- Original uploaded file: **pic1(1).png**
 - Original dimensions: 256 × 256 pixels
 - Original format: indexed PNG
-- Original SHA-256: \`9b32875db0caa8402f75943382c5a38724555aecd5a02593dfbd914491f70542\`
+- Original SHA-256: **9b32875db0caa8402f75943382c5a38724555aecd5a02593dfbd914491f70542**
 - Match check: the re-uploaded image is pixel-identical to the original image previously supplied for this project.
 
 The notebook copy is a compact, 128-tone palette PNG for convenient reference. The SHA-256 above identifies the original uploaded file, not the optimized notebook copy.
@@ -28,7 +28,7 @@ The intended visual reference is the familiar white performance/cartoon glove st
 
 ## Source-of-truth rule
 
-Use this reference when discussing, converting, or animating the ASCII artwork. Do not reinterpret the glove as metallic, tactical, armored, or robotic. Do not replace it with a generic cartoon glove. The existing \`assets/glove-map.txt.gz\` is the ASCII density map generated from this same image.
+Use this reference when discussing, converting, or animating the ASCII artwork. Do not reinterpret the glove as metallic, tactical, armored, or robotic. Do not replace it with a generic cartoon glove. The existing assets/glove-map.txt.gz is the ASCII density map generated from this same image.
 
 ## ASCII conversion priorities
 
