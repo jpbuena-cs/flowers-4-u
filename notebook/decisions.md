@@ -8,12 +8,11 @@
 | Character density | Broad glyph ramp; 144 desktop / 72 mobile target columns | Increase definition while keeping small screens legible. |
 | Rendering element | HTML pre element | Preserves whitespace and character alignment. |
 | Conversion | Precomputed gzip-compressed text map | Keeps the page centered on ASCII data, avoids image decoding at runtime, and reduces transfer size; decompression uses a native browser API. |
-| Animation style | Living-illustration / breathing-image motion | Use small independent movements, slow easing, and one clear gesture instead of moving the whole image aggressively. |
-| Finger action | One-way lift after the idle motion begins; 9.2-second ease into a held pose | Gives the gesture a slow, deliberate reveal rather than a sudden jump or repetitive wag. |
-| Hand idle | Tiny wrist-led rotation, fractional-cell drift, and subtle scale breathing | Adds life while preserving the still-image composition. |
-| Fabric light | Smooth back-and-forth cloth highlight continues during the finger and hand movement | Keeps the existing animation as a background layer. |
-| Start timing | Still frame 1.8 seconds; finger begins 2.8 seconds after the continuous motion starts | Allows the viewer to register the initial pose before the gesture develops. |
-| Motion accessibility | Static frame for reduced-motion preference | Avoids continuous movement when a user requests reduced motion. |
+| Main movement | Entire ASCII hand enters from below the viewport | “Creep up” means the complete hand moves into the website view, not that the raised finger articulates. |
+| Entrance timing | 1.8-second delay, then a 3.6-second ease upward | Gives the blank page a brief pause before a deliberate, unhurried entrance. |
+| Living-image idle | Tiny wrist-led rotation, fractional-cell drift, and subtle breathing scale | Adds life after and during the entrance without shaking the whole image. |
+| Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
+| Motion accessibility | Static, centered frame for reduced-motion preference | Avoids movement when a user requests reduced motion. |
 | Dependencies | Native HTML, CSS, JavaScript only | Small static project; no framework or library is needed. |
 | Deployment | Repository is Pages-ready, but Pages is not enabled | Build and review locally before publication. |
 

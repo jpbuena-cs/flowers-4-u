@@ -7,14 +7,13 @@ const RAMP = " .-',:~\";^!_*+|=/\\)(r<>[]l?jv1cxzu7LYins}yJTt{Cfw%IVhFk2oX3mqdZ$
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
-const FINGER_LIFT_DELAY = 2800;
-const FINGER_LIFT_DURATION = 9200;
-const MAX_FINGER_LIFT = 4.6;
+const ENTRY_DURATION = 3600;
 const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 const TAU = Math.PI * 2;
 
 const output = document.querySelector("#art");
+const stage = document.querySelector(".stage");
 const measureCanvas = document.createElement("canvas");
 const measureContext = measureCanvas.getContext("2d");
 
@@ -28,14 +27,10 @@ let startTimer = 0;
 let lastFrameAt = 0;
 let animationStartedAt = 0;
 let isVisible = !document.hidden;
+let hasEntered = false;
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
-}
-
-function smoothstep(edge0, edge1, value) {
-  const t = clamp((value - edge0) / (edge1 - edge0), 0, 1);
-  return t * t * (3 - 2 * t);
 }
 
 function getColumnTarget() {
@@ -49,7 +44,6 @@ function getFontSize(nextColumns, nextRows) {
     ? measuredRatio
     : CHAR_WIDTH_RATIO;
 
-  const stage = document.querySelector(".stage");
   const availableWidth = Math.max(1, stage.clientWidth - 24);
   const availableHeight = Math.max(1, stage.clientHeight - 24);
   const widthFit = availableWidth / (nextColumns * charWidthRatio);
@@ -114,7 +108,7 @@ function characterFor(value) {
 
 function samplePixel(x, y) {
   // Samples outside the map as black. This prevents edge pixels from smearing
-  // if the tiny idle drift moves the hand by a fraction of a character cell.
+  // as the hand makes its tiny portrait-style idle movements.
   if (x < 0 || y < 0 || x > columns - 1 || y > rows - 1) return 0;
 
   const x0 = Math.floor(x);
@@ -132,18 +126,30 @@ function samplePixel(x, y) {
   return top * (1 - fy) + bottom * fy;
 }
 
-function getFingerMask(x, y, sizeRatio) {
-  // The raised finger runs diagonally from the upper-left toward its knuckle.
-  // The feathered mask keeps the lift strongest at the fingertip and anchored
-  // where the finger joins the palm.
-  const fingerCenterX = (23 / SOURCE_COLUMNS) * columns + 0.58 * y;
-  const horizontalDistance = Math.abs(x - fingerCenterX);
-  const acrossFinger = 1 - smoothstep(8.5 * sizeRatio, 14 * sizeRatio, horizontalDistance);
-  const topFade = smoothstep(4 * sizeRatio, 10 * sizeRatio, y);
-  const baseFade = 1 - smoothstep(72 * sizeRatio, 89 * sizeRatio, y);
-  const towardTip = 1 - smoothstep(10 * sizeRatio, 88 * sizeRatio, y);
+function setArtAtRest() {
+  output.style.transition = "none";
+  output.style.transform = "translate3d(0, 0, 0)";
+}
 
-  return acrossFinger * topFade * baseFade * towardTip;
+function placeArtBelowViewport() {
+  const artHeight = output.getBoundingClientRect().height;
+  const offset = (stage.clientHeight + artHeight) / 2 + 32;
+
+  // The pre is centered by the stage grid. This offset puts its top edge
+  // just below the viewport, so the complete hand rises into view from below.
+  output.style.transition = "none";
+  output.style.transform = "translate3d(0, " + Math.ceil(offset) + "px, 0)";
+  output.getBoundingClientRect();
+}
+
+function beginEntrance() {
+  output.style.transition =
+    "transform " + ENTRY_DURATION + "ms cubic-bezier(0.22, 0.74, 0.18, 1)";
+
+  requestAnimationFrame(() => {
+    output.style.transform = "translate3d(0, 0, 0)";
+    hasEntered = true;
+  });
 }
 
 function renderFrame(elapsed, animated) {
@@ -153,11 +159,10 @@ function renderFrame(elapsed, animated) {
   const sweepPosition = isMoving
     ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * TAU)
     : -1;
-  const sizeRatio = columns / SOURCE_COLUMNS;
   const lines = new Array(rows);
 
-  // A portrait-style idle: the hand gently settles around its wrist rather
-  // than wobbling as one rigid sticker. The amplitudes stay below one cell.
+  // Living-portrait idle: a tiny wrist-led pivot and fractional-cell drift.
+  // Keep these movements smaller than one character cell.
   const idlePhase = (elapsed / 18500) * TAU;
   const idleAngle = isMoving ? Math.sin(idlePhase) * 0.0022 : 0;
   const cosine = Math.cos(idleAngle);
@@ -165,45 +170,29 @@ function renderFrame(elapsed, animated) {
   const breathPhase = (elapsed / 23000) * TAU;
   const scaleX = isMoving ? 1 + Math.sin(breathPhase) * 0.00125 : 1;
   const scaleY = isMoving ? 1 + Math.sin(breathPhase + 1.15) * 0.0009 : 1;
-  const driftX = isMoving ? Math.sin((elapsed / 14500) * TAU + 0.6) * 0.2 * sizeRatio : 0;
-  const driftY = isMoving ? Math.sin((elapsed / 17200) * TAU + 2.0) * 0.22 * sizeRatio : 0;
+  const driftX = isMoving ? Math.sin((elapsed / 14500) * TAU + 0.6) * 0.2 : 0;
+  const driftY = isMoving ? Math.sin((elapsed / 17200) * TAU + 2.0) * 0.22 : 0;
 
-  // The wrist/cuff is the quiet pivot point for the hand's tiny idle movement.
+  // The wrist/cuff is the quiet pivot point for the hand's idle movement.
   const pivotX = columns * 0.53;
   const pivotY = rows * 0.81;
-
-  // The finger begins lifting only after the fabric-light movement is underway.
-  // It rises once, slowly, then holds its new pose while the idle loop continues.
-  const liftProgress = isMoving
-    ? smoothstep(0, 1, (elapsed - FINGER_LIFT_DELAY) / FINGER_LIFT_DURATION)
-    : 0;
-  const fingerLift = MAX_FINGER_LIFT * sizeRatio * liftProgress;
 
   for (let y = 0; y < rows; y += 1) {
     const line = new Array(columns);
     const vertical = y / Math.max(1, rows - 1);
 
     for (let x = 0; x < columns; x += 1) {
-      // Inverse transform: tiny wrist-led sway, breathing scale, and drift.
+      // Inverse transform creates the slight organic motion inside the art.
       const relativeX = x - driftX - pivotX;
       const relativeY = y - driftY - pivotY;
-      let sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
-      let sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
-
-      if (liftProgress > 0) {
-        const fingerMask = getFingerMask(x, y, sizeRatio);
-        const localLift = fingerLift * fingerMask;
-        // Move along the finger's existing diagonal, not straight upward:
-        // this makes the fingertip creep up while its base stays attached.
-        sourceX += localLift * 0.58;
-        sourceY += localLift;
-      }
-
+      const sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
+      const sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
       const source = samplePixel(sourceX, sourceY);
       let value = source;
 
       if (isMoving && source > 8) {
-        // The soft highlight keeps moving underneath the hand's idle motion.
+        // A soft cloth highlight travels back and forth during the entrance
+        // and continues after the hand settles into the center of the page.
         const horizontal = x / Math.max(1, columns - 1);
         const distance = (horizontal - sweepPosition) / 0.24;
         const softSweep = Math.exp(-0.5 * distance * distance);
@@ -244,21 +233,41 @@ function animate(timestamp) {
   animationFrame = requestAnimationFrame(animate);
 }
 
-function startAnimation() {
+function startAnimation({ enter = false } = {}) {
   stopAnimation();
-  if (REDUCED_MOTION.matches || !isVisible || !pixels) return;
+
+  if (!pixels) return;
+
+  if (REDUCED_MOTION.matches) {
+    hasEntered = true;
+    setArtAtRest();
+    renderFrame(0, false);
+    return;
+  }
+
+  if (!isVisible) return;
+
+  const shouldEnter = enter && !hasEntered;
+  if (shouldEnter) {
+    placeArtBelowViewport();
+  } else {
+    setArtAtRest();
+  }
 
   renderFrame(0, false);
+
   startTimer = window.setTimeout(() => {
     animationStartedAt = performance.now();
     lastFrameAt = 0;
     animationFrame = requestAnimationFrame(animate);
+
+    if (shouldEnter) beginEntrance();
   }, START_DELAY);
 }
 
 function refreshLayout() {
   const gridChanged = buildSampleGrid();
-  if (gridChanged) startAnimation();
+  if (gridChanged) startAnimation({ enter: !hasEntered });
 }
 
 async function loadArtworkMap() {
@@ -293,7 +302,7 @@ async function loadArtworkMap() {
     }
 
     buildSampleGrid();
-    startAnimation();
+    startAnimation({ enter: true });
   } catch {
     // Keep the page empty rather than showing fallback copy or interface text.
     output.textContent = "";
@@ -301,11 +310,14 @@ async function loadArtworkMap() {
 }
 
 const resizeObserver = new ResizeObserver(() => refreshLayout());
-resizeObserver.observe(document.querySelector(".stage"));
+resizeObserver.observe(stage);
 
 REDUCED_MOTION.addEventListener("change", () => {
   stopAnimation();
+
   if (REDUCED_MOTION.matches) {
+    hasEntered = true;
+    setArtAtRest();
     renderFrame(0, false);
   } else {
     startAnimation();
@@ -314,10 +326,11 @@ REDUCED_MOTION.addEventListener("change", () => {
 
 document.addEventListener("visibilitychange", () => {
   isVisible = !document.hidden;
+
   if (!isVisible) {
     stopAnimation();
   } else {
-    startAnimation();
+    startAnimation({ enter: !hasEntered });
   }
 });
 

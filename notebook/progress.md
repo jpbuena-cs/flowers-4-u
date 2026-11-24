@@ -1,27 +1,34 @@
 # Progress
 
-## Motion pass — 2026-11-24
+## Entrance correction — 2026-11-24
+
+### User clarification
+
+“Slow moving upwards creep” means the entire hand starts outside the visible page, below the viewport, then moves upward into the website's view. It does not mean that the raised finger independently lifts or articulates.
 
 ### Implemented
 
-- Preserved the existing automatic fabric-light sweep.
-- Added a one-way upward creep for the raised finger, starting 2.8 seconds after continuous animation begins and easing over 9.2 seconds.
-- The finger motion is limited to a feathered region. Displacement is strongest near the fingertip and fades toward the knuckle so the finger stays visually attached to the palm.
-- Added a subtle wrist-led idle motion: a very small pivot rotation, fractional-character drift, and near-imperceptible horizontal/vertical breathing scale.
-- The hand's motion and the fabric-light movement run concurrently.
-- The idle and fabric motions continue after the finger reaches its new pose.
-- Reduced-motion mode still renders a static frame.
+- Removed the independent finger-lift deformation and all finger-specific timing/masking.
+- The complete ASCII hand is initially placed below the viewport using a calculated CSS transform.
+- After an approximately 1.8-second pause, the fabric-light animation and subtle living-portrait idle movement start.
+- At the same time, the whole hand enters upward over approximately 3.6 seconds with a slow ease-out.
+- After entering, the hand remains centered while the fabric light and tiny wrist-led idle motion continue.
+- The entrance is only played once; it does not replay after resizing or returning to a visible tab.
+- Reduced-motion mode displays the complete image immediately in its final centered position.
 
-### Browser validation
+### Technical notes
 
-- Chromium desktop viewport: rendered successfully; the character output changed during active animation; no page errors.
-- Chromium mobile viewport (390 × 844): rendered 72 columns × 72 rows; no page errors.
-- Reduced-motion preference: the rendered text remained unchanged during a 4-second check.
-- This is a programmatic remapping of a flattened image, not a true multi-layer parallax rig.
+- Entrance is a CSS transform of the complete ASCII art element.
+- The source image remains a single flattened artwork. No independent finger rig or 2.5D depth layers are claimed.
+- The character grid continues to use the existing low-amplitude wrist pivot and drift effect for the living-image feel.
+
+### Not yet verified
+
+- The revised entrance has not yet been checked on a physical phone.
+- The entrance should be visually reviewed at several aspect ratios to confirm the full character map starts completely outside the visible frame.
 
 ### Next work
 
-1. Review the finger's final height and the amount of hand drift on the user's desktop and phone.
-2. Tune the finger mask if the transition at the knuckle looks stretched or detached.
-3. Consider a more sophisticated regional rig only if the current image-grid warp is visibly limiting the result.
-4. Ask for visual approval before enabling GitHub Pages.
+1. Check whether the 3.6-second entrance is the right pace.
+2. Tune the start offset or duration if the first characters appear too early or the movement feels too slow.
+3. Ask for visual approval before enabling GitHub Pages.

@@ -37,21 +37,21 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 
 ## Motion
 
-- Render a complete still image first.
-- Wait approximately 1.8 seconds after the map is ready.
-- Start the fabric-light sweep and subtle idle movement together.
-- The fabric light moves smoothly back and forth, with very subtle changes in character density.
-- After another 2.8 seconds, the raised finger begins to creep upward.
-- The finger lift uses a feathered region so movement is strongest toward the fingertip and fades toward the knuckle. The lift takes approximately 9.2 seconds, then holds its new pose.
-- While this happens, the hand has a very small wrist-led sway, sub-character drift, and near-imperceptible breathing scale. The wrist/cuff acts as the pivot so the hand feels like a living illustration rather than a sticker being shaken.
-- Keep all movement restrained. Avoid aggressive glitches, bouncing, or a metallic scanning effect.
-- Loop the idle and fabric motion continuously.
-- Respect prefers-reduced-motion: show a complete static frame and do not run continuous animation.
+- Render the complete ASCII hand below the visible viewport.
+- Wait approximately 1.8 seconds after the character map is ready.
+- Start the fabric-light sweep and subtle living-portrait idle movement as the hand begins entering.
+- The entire hand rises from below the bottom edge into its centered resting position over approximately 3.6 seconds.
+- The hand does not articulate or independently lift its finger during this entrance. The gesture is already present in the source image; the whole hand is what enters the frame.
+- The fabric light moves smoothly back and forth with very subtle character-density changes.
+- While the hand is in view, a tiny wrist-led sway, sub-character drift, and near-imperceptible breathing scale keep the illustration feeling alive.
+- Keep the movement restrained. Avoid aggressive glitches, bouncing, or a metallic scanning effect.
+- Loop the idle and fabric motion continuously after the entrance.
+- Respect prefers-reduced-motion: show the artwork immediately in its final centered position as a static frame.
 - Pause animation when the page is hidden.
 
 ## Technical note
 
-The source is a single flattened image, not a layered illustration. The hand movement is therefore simulated by smoothly remapping the ASCII brightness grid. This gives a restrained living-image effect without claiming true depth-based parallax or independently rigged anatomy.
+The source is a single flattened image. The entry is a translation of the complete ASCII artwork, not an independent finger rig. The subtle idle movement is a small remapping of the ASCII brightness grid.
 
 ## Tone
 
