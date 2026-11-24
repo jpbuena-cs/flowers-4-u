@@ -28,7 +28,7 @@ The overall visual language resembles the familiar white performance/cartoon glo
 
 Use \`notebook/references/glove.png\` as the canonical visual reference for this project. Do not reinterpret the glove as metallic, tactical, armored, or robotic. Do not replace it with a generic cartoon glove.
 
-The compressed ASCII map at \`assets/glove-map.txt.gz\` was generated from this same source artwork. When discussing or changing the conversion, compare it against \`glove.png\` rather than a remembered or generalized version of the subject.
+The compressed ASCII map at \`assets/glove-map.txt.gz\` was generated from this same source artwork. Its crop and tonal settings are documented in [ascii-rendering.md](./ascii-rendering.md). When discussing or changing the conversion, compare it against \`glove.png\` rather than a remembered or generalized version of the subject.
 
 ## ASCII conversion priorities
 

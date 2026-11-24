@@ -1,6 +1,6 @@
 # sumosobra-kana
 
-A minimalist, single-purpose ASCII art page. The website renders a precomputed character map derived from the user-provided white cartoon glove image. The page itself contains only the animated character rendering; project notes and implementation decisions live separately in notebook/.
+A minimalist, single-purpose ASCII art page. The website renders a precomputed character map derived from the canonical white fabric-glove reference in \`notebook/references/glove.png\`. The page itself contains only the animated character rendering; project notes and implementation decisions live separately in \`notebook/\`.
 
 ## Run locally
 
@@ -17,8 +17,14 @@ Then open http://localhost:8000.
 ├── assets/
 │   └── glove-map.txt.gz
 ├── notebook/
+│   ├── references/
+│   │   └── glove.png
 │   ├── README.md
+│   ├── ascii-rendering.md
 │   ├── design-brief.md
+│   ├── source-image.md
+│   ├── animation-direction.md
+│   ├── roadmap.md
 │   ├── decisions.md
 │   ├── implementation-plan.md
 │   └── progress.md
@@ -30,11 +36,14 @@ Then open http://localhost:8000.
 
 ## Current prototype
 
-- Uses a 94-character brightness ramp for tonal detail.
-- Stores the source artwork as a gzip-compressed 144 × 144 character map and decompresses it with the browser’s native API.
+- Uses a 95-character brightness ramp ordered by measured glyph ink coverage.
+- Stores the source artwork as a gzip-compressed 144 × 144 character map and decompresses it with the browser's native API.
 - Uses 144 columns on desktop and averages the map down to 72 columns on mobile.
-- Waits briefly before starting a restrained, continuous fabric-light animation.
+- Uses a controlled black point and tonal curve to suppress background haze while retaining fabric folds, seams, and cuff details.
+- Waits briefly before starting the entrance, subtle living-portrait movement, and continuous fabric-light animation.
 - Shows a static rendering when reduced motion is enabled.
-- Uses native browser APIs only. No framework, third-party font, library, third-party network request, audio, or visible interface controls.
+- Uses native browser APIs only. No framework, external font download, library, third-party network request, audio, or visible interface controls.
+
+Rendering parameters and palette comparisons are documented in \`notebook/ascii-rendering.md\`.
 
 GitHub Pages has not been configured or enabled as part of this prototype.

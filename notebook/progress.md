@@ -14,6 +14,7 @@
 - The raised finger remains outside the localized motion masks and retains its source silhouette.
 - The original fabric-light sweep remains unchanged and runs concurrently.
 - No separate hand segmentation or rigging was introduced.
+- The user reviewed the movement and said it looked fine.
 
 ### Browser validation
 
@@ -35,15 +36,42 @@ Additional checks:
 - Reduced-motion mode kept the ASCII output unchanged and centered.
 - The existing entrance and fabric-light code paths remain in place.
 
+## Phase 3 — ASCII-rendering refinement — 2026-11-24
+
+### Rendering changes
+
+- Replaced the previous custom 94-glyph ramp with a 95-glyph ramp sorted by average measured ink coverage across Liberation Mono and DejaVu Sans Mono.
+- Compared it against both the previous ramp and a classic 10-glyph ramp. The 10-glyph version loses too many subtle tones for the fabric texture and seams.
+- Regenerated the map from the canonical source image, \`notebook/references/glove.png\`, rather than remapping the old compressed map.
+- Used a 136 × 226 crop at source coordinates x=60, y=10, then Lanczos-resampled it to a 144 × 144 grid.
+- Applied a black point of 32, white point of 220, contrast of 1.04, and gamma of 0.85.
+- Kept the dark background quiet while retaining the glove's stitched seams, palm folds, cuff bands, and highlights.
+- Updated \`assets/glove-map.txt.gz\` and the runtime ramp in \`src/main.js\`.
+- Kept the existing entrance, Phase 2 idle movement, fabric-light sweep, reduced-motion behavior, and hidden-tab handling unchanged.
+
+### Validation
+
+| Check | Result |
+|---|---|
+| Gzip map decompresses | Pass |
+| Map dimensions | 144 × 144 |
+| Unique ramp glyphs | 95 |
+| Unmapped characters | 0 |
+| Desktop grid | 144 × 144, uniform rows |
+| Mobile grid | 72 × 72, uniform rows |
+| Canonical source hash | Matches \`notebook/references/glove.png\` |
+
+Desktop and mobile preview images were generated locally from the exact character grids. Chromium headless capture did not complete in this execution environment, so these are local rendering previews, not browser screenshots. The live page still needs user review in the user's browser.
+
 ### Pending user review
 
-- Confirm whether the living movement is subtle enough.
-- Confirm that the palm and cuff feel like soft fabric rather than a ripple effect.
-- Confirm whether the overall hand feels more alive without becoming distracting.
+- Compare the new desktop rendering against the previous version.
+- Check whether small fabric details remain readable on mobile.
+- Confirm the black point removes background haze without erasing important glove shadows.
 
 ### Next work
 
-1. Get user feedback on Phase 2.
-2. Adjust or remove the localized warp if it makes the fabric look unstable.
-3. Move to Phase 3 only after the motion direction is accepted.
+1. Get user feedback on Phase 3.
+2. Tune the ramp or tonal settings only if the preview reveals a specific issue.
+3. Move to Phase 4 only after the rendering is accepted.
 4. Keep GitHub Pages disabled until explicit approval.

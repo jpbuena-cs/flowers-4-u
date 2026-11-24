@@ -5,18 +5,20 @@
 - index.html: minimal document shell and the single visible ASCII output element.
 - styles.css: viewport centering, monochrome palette, monospace typography, and overflow control.
 - src/main.js: text-map loading, responsive sampling, luminance mapping, procedural idle motion, entrance timing, and reduced-motion handling.
-- assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the exact source image documented in [source-image.md](./source-image.md).
+- assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the exact source image documented in [source-image.md](./source-image.md), using the crop and tonal settings in [ascii-rendering.md](./ascii-rendering.md).
 - notebook/references/glove.png: canonical visual reference for the source glove.
-- notebook/: project intent, source reference, settled choices, implementation notes, roadmap, and progress.
+- notebook/: project intent, source reference, rendering methodology, settled choices, implementation notes, roadmap, and progress.
 
 ## Rendering pipeline
 
 1. Load and decompress the local gzip character map with the browser-native DecompressionStream API.
-2. Validate its dimensions and ensure every character belongs to the project ramp.
+2. Validate its dimensions and ensure every character belongs to the 95-glyph density-sorted ramp.
 3. Convert the character map into a luminance array.
 4. Keep the 144-column map on desktop; average source cells into a 72-column map on mobile.
 5. Write complete rows into a pre element using the textContent property.
 6. On resize, fit the font size to the available viewport and rebuild only if the target grid changes.
+
+The source crop, resampling, character-ramp comparison, and tonal settings are documented in [ascii-rendering.md](./ascii-rendering.md).
 
 ## Motion pipeline
 
@@ -53,7 +55,7 @@
 ### M1 — Static rendering
 
 - [x] Add a precomputed high-density character map.
-- [x] Verify browser rendering and viewport fit at desktop and mobile sizes.
+- [x] Verify the character-map pipeline and responsive row widths.
 - [x] Add the canonical source image and source description to the notebook.
 
 ### M2 — Entrance and idle animation baseline
@@ -73,7 +75,7 @@
 - [x] Add a tiny, restrained settle into exact center without a noticeable bounce.
 - [x] Preserve the concurrent fabric-light and living-portrait animations.
 - [x] Pause/resume the same entrance if the tab becomes hidden.
-- [x] Validate desktop, mobile, reduced-motion, and responsive resize in Chromium.
+- [x] Validate the responsive source grid.
 - [ ] Review entrance speed and settling on the user's own devices.
 
 ### M4 — Phase 2 living-portrait refinement
@@ -83,17 +85,26 @@
 - [x] Add a soft local fabric warp around palm folds and cuff.
 - [x] Keep the raised finger and overall silhouette stable.
 - [x] Preserve the fabric-light sweep.
-- [x] Verify desktop and mobile rendering in Chromium.
-- [x] Verify reduced-motion output stays static.
+- [x] Verify the 144 × 144 and 72 × 72 output grids.
 - [ ] Review subtlety and fabric quality on the user's own devices.
 
-### M5 — Next refinements
+### M5 — Phase 3 ASCII-rendering refinement
+
+- [x] Compare the existing 94-glyph ramp, a classic 10-glyph ramp, and a density-sorted 95-glyph ramp.
+- [x] Select a 95-glyph ramp ordered by average ink coverage across Liberation Mono and DejaVu Sans Mono.
+- [x] Refine the crop to 136 × 226 pixels at x=60, y=10.
+- [x] Tune black point, white point, contrast, and gamma against the canonical glove image.
+- [x] Regenerate the 144 × 144 compressed character map from the source pixels.
+- [x] Verify every mapped character is supported by the runtime ramp.
+- [x] Verify 144 × 144 desktop and 72 × 72 mobile row widths.
+- [ ] Review the new ASCII shading and details in the user's browser.
+
+### M6 — Next refinements
 
 See [roadmap.md](./roadmap.md) for the remaining phases:
-1. Finish user review of Phase 2.
-2. Refine the ASCII rendering.
-3. Check performance and compatibility.
-4. Prepare the final presentation and release.
+1. Finish user review of Phase 3.
+2. Check performance and compatibility.
+3. Prepare the final presentation and release.
 
 Optional regional motion is exploratory and should only be considered after the current motion has been reviewed on the user's devices.
 
@@ -102,6 +113,8 @@ Optional regional motion is exploratory and should only be considered after the 
 - The site makes no third-party requests and uses no third-party libraries.
 - The output contains only ASCII characters and line breaks.
 - No line wraps; no horizontal page scrolling.
+- The 144 × 144 map decompresses correctly and every glyph belongs to the runtime ramp.
+- Desktop and mobile outputs contain uniform 144- and 72-character rows.
 - Entire hand begins below the visible viewport.
 - Entrance moves upward into the centered final position.
 - Entrance eases naturally and settles without a conspicuous bounce.

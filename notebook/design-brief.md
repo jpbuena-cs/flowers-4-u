@@ -20,12 +20,12 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 
 ## Character rendering
 
-- Use a broad, 94-character brightness ramp, ordered from sparse to dense glyphs.
+- Use a 95-character brightness ramp ordered by average glyph ink coverage across Liberation Mono and DejaVu Sans Mono.
 - Clamp low-level source noise to black so the background remains quiet.
 - Preserve the glove silhouette, raised finger, fabric folds, seams, and cuff.
 - Keep the image monochrome.
 - Favor character-level detail over chunky low-resolution output.
-- Use a tightly framed crop around the glove while retaining a small dark margin.
+- Use the canonical, tightly framed crop documented in [ascii-rendering.md](./ascii-rendering.md).
 
 ## Responsive behavior
 

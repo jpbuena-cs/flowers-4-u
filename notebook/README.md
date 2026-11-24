@@ -6,11 +6,12 @@ This directory is the durable project memory. Update it when a design or technic
 
 1. [Design brief](./design-brief.md) — the intended experience and visual rules.
 2. [Source image](./source-image.md) — the exact glove reference and visual details to preserve.
-3. [Animation direction](./animation-direction.md) — motion references and the chosen living-illustration treatment.
-4. [Roadmap](./roadmap.md) — the ordered refinement phases and release criteria.
-5. [Decisions](./decisions.md) — accepted constraints and the reasons behind them.
-6. [Implementation plan](./implementation-plan.md) — current architecture and implementation details.
-7. [Progress](./progress.md) — what exists, what was checked, and open questions.
+3. [ASCII rendering](./ascii-rendering.md) — character-ramp comparison, source crop, tonal mapping, and responsive conversion.
+4. [Animation direction](./animation-direction.md) — motion references and the chosen living-illustration treatment.
+5. [Roadmap](./roadmap.md) — the ordered refinement phases and release criteria.
+6. [Decisions](./decisions.md) — accepted constraints and the reasons behind them.
+7. [Implementation plan](./implementation-plan.md) — current architecture and implementation details.
+8. [Progress](./progress.md) — what exists, what was checked, and open questions.
 
 ## Notebook rule
 

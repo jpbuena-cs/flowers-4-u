@@ -2,7 +2,7 @@
 
 ## Current stage
 
-Phase 1's entrance has been refined and browser-validated. The project has moved into **Phase 2 — Improve the living-portrait effect**. Phase 1's final review on the user's own devices remains open, but the explicit request to proceed with Phase 2 has been followed.
+The entrance (Phase 1) and living-portrait animation (Phase 2) are implemented. The first ASCII-rendering refinement pass (Phase 3) is complete and awaiting the user's visual review.
 
 The page's core rule remains unchanged: the ASCII artwork is the entire website. There should be no visible copy, controls, menus, navigation, or sound.
 
@@ -49,34 +49,37 @@ Refinements implemented:
 - Preserved the existing fabric-light sweep as a separate continuous effect.
 - Scaled the localized movement for the smaller mobile character grid.
 - Preserved reduced-motion behavior: the complete artwork remains static when requested.
-
-Remaining review:
-
-- Check whether the idle motion is noticeable only on a second look on the user's own devices.
-- Confirm the palm and cuff movement feels like soft fabric, not rippling or distortion.
-- Adjust or remove localized movement if it weakens the recognizable glove folds.
+- The user reviewed the movement and said it looked fine.
 
 **Completion criteria:** the hand feels gently animated while the composition remains steady. The idle movement must never compete with the entrance or the artwork itself.
 
 ### Phase 3 — Refine the ASCII rendering
 
-**Priority: after the motion reads well**
+**Status: first implementation pass complete; user visual review pending**
 
 Improve the quality of the image represented by the characters.
 
-Planned refinements:
+Refinements implemented:
 
-- Compare alternative character ramps using the same source image.
-- Fine-tune brightness mapping and shadow separation.
-- Preserve small visual details such as glove seams, creases, and folds.
-- Review the image at desktop and mobile character densities.
-- Keep the image monochrome and avoid compromising the minimalist appearance.
+- Compared the existing 94-glyph ramp, a classic 10-glyph ramp, and a density-sorted 95-glyph ramp.
+- Selected a 95-glyph ramp ordered by average measured ink coverage across Liberation Mono and DejaVu Sans Mono.
+- Reframed the canonical source to a 136 × 226 crop that preserves the whole glove and matches the monospace cell aspect ratio.
+- Tuned the black point, white point, contrast, and gamma to suppress background haze while preserving dark seams, folds, and fabric shading.
+- Regenerated the 144 × 144 compressed map from the original source pixels.
+- Verified the map dimensions, glyph membership, and 144-column desktop / 72-column mobile outputs.
+- Kept the image monochrome and left all animation behavior intact.
+
+Remaining review:
+
+- Inspect the new shading and glove details in the user's browser.
+- Check whether the 95-glyph ramp looks cleaner than the previous ramp at both desktop and mobile sizes.
+- Tune tonal values only in response to visible issues.
 
 **Completion criteria:** the glove remains immediately recognizable, retains its important fabric details, and reads cleanly at both target widths.
 
 ### Phase 4 — Performance and compatibility
 
-**Priority: before release**
+**Priority: after Phase 3 approval**
 
 Make the animation dependable across common devices.
 
@@ -132,4 +135,4 @@ Constraints and risks:
 
 ## Current next action
 
-Get the user's feedback on the Phase 2 living-portrait motion, especially the subtle weight shift and localized palm/cuff movement. Do not begin Phase 3 until this motion has been reviewed.
+Get the user's feedback on the Phase 3 ASCII rendering at desktop and mobile sizes. Do not begin Phase 4 until the rendering has been reviewed.
