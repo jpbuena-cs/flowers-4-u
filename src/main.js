@@ -4,7 +4,13 @@ const SOURCE_ROWS = 144;
 
 // Ordered from visually sparse to visually dense. The map uses this same ramp.
 // 95 glyphs sorted by average ink coverage across Liberation Mono and DejaVu Sans Mono.
-const RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HO$&D08gRNQWMB@";
+const RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HOconst RAMP = " `.-',:_~;\"!^*\\/r+=<>|()l?7LcitvzxTY][jJfs1}{unIyCFo2Ve4k3hXaZw5SP%AU#EbGdpqmK69HO$&D08gRNQWMB@";
+const TARGET_FPS = 24;D08gRNQWMB@";
+const CHARACTER_CODES = new Uint16Array(
+  Array.from({ length: 256 }, (_, value) =>
+    RAMP.charCodeAt(Math.round((value / 255) * (RAMP.length - 1))),
+  ),
+);
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
@@ -15,6 +21,9 @@ const TAU = Math.PI * 2;
 
 const output = document.querySelector("#art");
 const stage = document.querySelector(".stage");
+const artText = document.createTextNode("");
+output.append(artText);
+
 const measureCanvas = document.createElement("canvas");
 const measureContext = measureCanvas.getContext("2d");
 
@@ -23,6 +32,7 @@ let pixels = null;
 let columns = 0;
 let rows = 0;
 let currentFontSize = null;
+let motionFields = null;
 let animationFrame = 0;
 let startTimer = 0;
 let lastFrameAt = 0;
@@ -102,16 +112,76 @@ function buildSampleGrid() {
     }
   }
 
+  buildMotionFields();
   renderFrame(animationElapsed, false);
   return true;
 }
 
-function characterFor(value) {
-  const index = Math.max(
-    0,
-    Math.min(RAMP.length - 1, Math.round((value / 255) * (RAMP.length - 1))),
-  );
-  return RAMP[index];
+function buildMotionFields() {
+  const length = columns * rows;
+  const motionScale = Math.sqrt(columns / SOURCE_COLUMNS);
+
+  // Precompute masks and spatial wave coefficients once per grid size.
+  // The frame renderer only applies time-dependent multipliers to these.
+  const fields = {
+    palmXSin: new Float32Array(length),
+    palmXCos: new Float32Array(length),
+    cuffXSin: new Float32Array(length),
+    cuffXCos: new Float32Array(length),
+    palmYCos: new Float32Array(length),
+    palmYSin: new Float32Array(length),
+    cuffYCos: new Float32Array(length),
+    cuffYSin: new Float32Array(length),
+    fabricSin: new Float32Array(length),
+    fabricCos: new Float32Array(length),
+    horizontal: new Float32Array(columns),
+    sweep: new Float32Array(columns),
+    outputBuffer: new Uint16Array(length + rows - 1),
+    stringParts: [],
+  };
+
+  for (let x = 0; x < columns; x += 1) {
+    fields.horizontal[x] = x / Math.max(1, columns - 1);
+  }
+
+  for (let y = 0; y < rows; y += 1) {
+    const vertical = y / Math.max(1, rows - 1);
+    const rowOffset = y * columns;
+
+    for (let x = 0; x < columns; x += 1) {
+      const index = rowOffset + x;
+      const horizontal = fields.horizontal[x];
+
+      const palmDx = (x - columns * 0.535) / (columns * 0.19);
+      const palmDy = (y - rows * 0.49) / (rows * 0.19);
+      const palmMask = Math.exp(-1.65 * (palmDx * palmDx + palmDy * palmDy));
+
+      const cuffDx = (x - columns * 0.57) / (columns * 0.17);
+      const cuffDy = (y - rows * 0.81) / (rows * 0.075);
+      const cuffMask = Math.exp(-1.8 * (cuffDx * cuffDx + cuffDy * cuffDy));
+
+      const palmXPhase = horizontal * 3.8 + vertical * 2.2;
+      const cuffXPhase = horizontal * 2.6 - vertical * 1.7 + 0.8;
+      const palmYPhase = horizontal * 3.1;
+      const cuffYPhase = vertical * 2.8;
+      const fabricPhase = horizontal * 7.5 + vertical * 4.2;
+
+      fields.palmXSin[index] = motionScale * palmMask * 0.16 * Math.sin(palmXPhase);
+      fields.palmXCos[index] = motionScale * palmMask * 0.16 * Math.cos(palmXPhase);
+      fields.cuffXSin[index] = motionScale * cuffMask * 0.085 * Math.sin(cuffXPhase);
+      fields.cuffXCos[index] = motionScale * cuffMask * 0.085 * Math.cos(cuffXPhase);
+
+      fields.palmYCos[index] = motionScale * palmMask * 0.105 * Math.cos(palmYPhase);
+      fields.palmYSin[index] = motionScale * palmMask * 0.105 * Math.sin(palmYPhase);
+      fields.cuffYCos[index] = motionScale * cuffMask * 0.06 * Math.cos(cuffYPhase);
+      fields.cuffYSin[index] = motionScale * cuffMask * 0.06 * Math.sin(cuffYPhase);
+
+      fields.fabricSin[index] = Math.sin(fabricPhase);
+      fields.fabricCos[index] = Math.cos(fabricPhase);
+    }
+  }
+
+  motionFields = fields;
 }
 
 function samplePixel(x, y) {
@@ -210,17 +280,37 @@ function beginEntrance(offset) {
 }
 
 function renderFrame(elapsed, animated) {
-  if (!pixels) return;
+  if (!pixels || !motionFields) return;
 
   const isMoving = animated && !REDUCED_MOTION.matches;
+  const fields = motionFields;
   const sweepPosition = isMoving
     ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * TAU)
     : -1;
-  const lines = new Array(rows);
 
-  // Living-portrait idle: a slow, wrist-led weight shift with independent
-  // breathing and drift cycles. The amplitudes stay below one character cell,
-  // and the different cycle lengths prevent a mechanical, synchronized loop.
+  // Temporal terms are calculated once per frame, not once per character.
+  const palmXSin = isMoving ? Math.sin(elapsed * 0.00034) : 0;
+  const palmXCos = isMoving ? Math.cos(elapsed * 0.00034) : 0;
+  const cuffXSin = isMoving ? Math.sin(elapsed * 0.00027) : 0;
+  const cuffXCos = isMoving ? Math.cos(elapsed * 0.00027) : 0;
+  const palmYSin = isMoving ? Math.sin(elapsed * 0.00031) : 0;
+  const palmYCos = isMoving ? Math.cos(elapsed * 0.00031) : 0;
+  const cuffYSin = isMoving ? Math.sin(elapsed * 0.00024) : 0;
+  const cuffYCos = isMoving ? Math.cos(elapsed * 0.00024) : 0;
+  const fabricSin = isMoving ? Math.sin(elapsed * 0.00062) : 0;
+  const fabricCos = isMoving ? Math.cos(elapsed * 0.00062) : 0;
+  const slowBreath = isMoving ? Math.sin(elapsed * 0.00038) * 1.1 : 0;
+
+  // The light sweep varies only by column. Calculate 72/144 weights once.
+  if (isMoving) {
+    for (let x = 0; x < columns; x += 1) {
+      const distance = (fields.horizontal[x] - sweepPosition) / 0.24;
+      fields.sweep[x] = Math.exp(-0.5 * distance * distance);
+    }
+  }
+
+  // Living-portrait idle: preserve the approved wrist-led movement, breathing,
+  // and drift. These values are shared by the whole character grid.
   const idlePhase = (elapsed / 19600) * TAU;
   const idleAngle = isMoving ? Math.sin(idlePhase + 0.35) * 0.0031 : 0;
   const cosine = Math.cos(idleAngle);
@@ -234,83 +324,77 @@ function renderFrame(elapsed, animated) {
     : 0;
   const driftY = isMoving ? Math.sin((elapsed / 21400) * TAU + 2.0) * 0.25 : 0;
 
-  // The wrist/cuff is the quiet pivot point for the hand's idle movement.
   const pivotX = columns * 0.53;
   const pivotY = rows * 0.81;
-  const motionScale = Math.sqrt(columns / SOURCE_COLUMNS);
+  const outputBuffer = fields.outputBuffer;
+  let writeIndex = 0;
 
   for (let y = 0; y < rows; y += 1) {
-    const line = new Array(columns);
-    const vertical = y / Math.max(1, rows - 1);
+    const rowOffset = y * columns;
 
     for (let x = 0; x < columns; x += 1) {
-      // Inverse transform creates the slight organic motion inside the art.
+      const index = rowOffset + x;
+
       const relativeX = x - driftX - pivotX;
       const relativeY = y - driftY - pivotY;
       let sourceX = (cosine * relativeX + sine * relativeY) / scaleX + pivotX;
       let sourceY = (-sine * relativeX + cosine * relativeY) / scaleY + pivotY;
 
       if (isMoving) {
-        // A soft, overlapping warp in the palm folds and cuff suggests cloth
-        // settling under its own weight. Gaussian masks have no hard borders;
-        // the movement remains far smaller than a character cell.
-        const palmDx = (x - columns * 0.535) / (columns * 0.19);
-        const palmDy = (y - rows * 0.49) / (rows * 0.19);
-        const palmMask = Math.exp(-1.65 * (palmDx * palmDx + palmDy * palmDy));
-        const cuffDx = (x - columns * 0.57) / (columns * 0.17);
-        const cuffDy = (y - rows * 0.81) / (rows * 0.075);
-        const cuffMask = Math.exp(-1.8 * (cuffDx * cuffDx + cuffDy * cuffDy));
-        const horizontalPosition = x / Math.max(1, columns - 1);
-        const verticalPosition = y / Math.max(1, rows - 1);
-        const palmFoldWave = Math.sin(
-          elapsed * 0.00034 + horizontalPosition * 3.8 + verticalPosition * 2.2,
-        );
-        const cuffSettleWave = Math.sin(
-          elapsed * 0.00027 + horizontalPosition * 2.6 - verticalPosition * 1.7 + 0.8,
-        );
+        // Apply precomputed feathered masks via time-dependent multipliers.
+        sourceX += palmXSin * fields.palmXCos[index]
+          + palmXCos * fields.palmXSin[index]
+          + cuffXSin * fields.cuffXCos[index]
+          + cuffXCos * fields.cuffXSin[index];
 
-        sourceX += motionScale * (
-          palmMask * palmFoldWave * 0.16 + cuffMask * cuffSettleWave * 0.085
-        );
-        sourceY += motionScale * (
-          palmMask * Math.cos(elapsed * 0.00031 + horizontalPosition * 3.1) * 0.105
-          + cuffMask * Math.cos(elapsed * 0.00024 + verticalPosition * 2.8) * 0.06
-        );
+        sourceY += palmYCos * fields.palmYCos[index]
+          - palmYSin * fields.palmYSin[index]
+          + cuffYCos * fields.cuffYCos[index]
+          - cuffYSin * fields.cuffYSin[index];
       }
 
       const source = samplePixel(sourceX, sourceY);
       let value = source;
 
       if (isMoving && source > 8) {
-        // A soft cloth highlight travels back and forth during the entrance
-        // and continues after the hand settles into the center of the page.
-        const horizontal = x / Math.max(1, columns - 1);
-        const distance = (horizontal - sweepPosition) / 0.24;
-        const softSweep = Math.exp(-0.5 * distance * distance);
-        const fabricVariation = Math.sin(
-          horizontal * 7.5 + vertical * 4.2 + elapsed * 0.00062,
+        const fabricVariation = (
+          fabricSin * fields.fabricCos[index]
+          + fabricCos * fields.fabricSin[index]
         ) * 1.15;
-        const slowBreath = Math.sin(elapsed * 0.00038) * 1.1;
-        value += softSweep * 8.5 + fabricVariation + slowBreath;
+        value += fields.sweep[x] * 8.5 + fabricVariation + slowBreath;
       }
 
-      line[x] = characterFor(clamp(value, 0, 255));
+      const brightness = Math.round(clamp(value, 0, 255));
+      outputBuffer[writeIndex++] = CHARACTER_CODES[brightness];
     }
 
-    lines[y] = line.join("");
+    if (y < rows - 1) outputBuffer[writeIndex++] = 10;
   }
 
-  output.textContent = lines.join("\n");
+  // Convert the reused character buffer in safe-size chunks and update the
+  // same text node. No row arrays or per-cell character strings are allocated.
+  fields.stringParts.length = 0;
+  const CHUNK_SIZE = 8192;
+  for (let offset = 0; offset < writeIndex; offset += CHUNK_SIZE) {
+    fields.stringParts.push(String.fromCharCode(...outputBuffer.subarray(
+      offset,
+      Math.min(writeIndex, offset + CHUNK_SIZE),
+    )));
+  }
+  artText.data = fields.stringParts.join("");
 }
-
 function animate(timestamp) {
   if (!isVisible || REDUCED_MOTION.matches) {
     animationFrame = 0;
     return;
   }
 
-  if (timestamp - lastFrameAt >= FRAME_INTERVAL) {
-    lastFrameAt = timestamp;
+  const frameDelta = timestamp - lastFrameAt;
+  if (frameDelta >= FRAME_INTERVAL) {
+    // Carry fractional frame intervals forward to preserve a stable 24 FPS
+    // cadence on common 60 Hz displays.
+    const elapsedIntervals = Math.max(1, Math.floor(frameDelta / FRAME_INTERVAL));
+    lastFrameAt += elapsedIntervals * FRAME_INTERVAL;
     animationElapsed = timestamp - animationStartedAt;
     renderFrame(animationElapsed, true);
   }
@@ -336,6 +420,7 @@ function startAnimation({ enter = false } = {}) {
   if (entranceAnimation && entranceStarted) {
     entranceAnimation.play();
     animationStartedAt = performance.now() - animationElapsed;
+    lastFrameAt = animationStartedAt;
     animationFrame = requestAnimationFrame(animate);
     return;
   }
@@ -348,7 +433,7 @@ function startAnimation({ enter = false } = {}) {
 
   startTimer = window.setTimeout(() => {
     animationStartedAt = performance.now() - animationElapsed;
-    lastFrameAt = 0;
+    lastFrameAt = animationStartedAt;
     animationFrame = requestAnimationFrame(animate);
 
     if (shouldEnter) beginEntrance(entranceOffset);
@@ -405,14 +490,18 @@ async function loadArtworkMap() {
   } catch (error) {
     // Keep the page free of visible copy, but report the actual failure in DevTools.
     console.error("ASCII artwork failed to load:", error);
-    output.textContent = "";
+    artText.data = "";
   }
 }
 
-const resizeObserver = new ResizeObserver(refreshLayout);
-resizeObserver.observe(stage);
+// ResizeObserver handles viewport changes beyond window.resize on mobile.
+// Older browsers use the window resize listener below as a compatibility fallback.
+if (typeof ResizeObserver === "function") {
+  const resizeObserver = new ResizeObserver(refreshLayout);
+  resizeObserver.observe(stage);
+}
 
-REDUCED_MOTION.addEventListener("change", () => {
+const handleMotionPreferenceChange = () => {
   stopAnimationLoop();
 
   if (REDUCED_MOTION.matches) {
@@ -423,7 +512,13 @@ REDUCED_MOTION.addEventListener("change", () => {
   } else {
     startAnimation();
   }
-});
+};
+
+if (typeof REDUCED_MOTION.addEventListener === "function") {
+  REDUCED_MOTION.addEventListener("change", handleMotionPreferenceChange);
+} else if (typeof REDUCED_MOTION.addListener === "function") {
+  REDUCED_MOTION.addListener(handleMotionPreferenceChange);
+}
 
 document.addEventListener("visibilitychange", () => {
   isVisible = !document.hidden;

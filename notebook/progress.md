@@ -16,80 +16,64 @@
 - No separate hand segmentation or rigging was introduced.
 - The user reviewed the movement and said it looked fine.
 
-### Browser validation
-
-Chromium checks using the actual 144 × 144 character map and local assets:
-
-| Check | Desktop | Mobile |
-|---|---:|---:|
-| Viewport | 1440 × 900 | 390 × 844 |
-| Character grid | 144 × 144 | 72 × 72 |
-| Final art centered | Pass | Pass |
-| Ragged ASCII rows | None | None |
-| Horizontal overflow | None | None |
-| JavaScript page errors | None | None |
-
-Additional checks:
-
-- The output continues changing during the idle state, while the outer art box remains centered.
-- Chromium's animation frame loop remained responsive during the short observation window; the character-grid renderer updates at its existing capped cadence.
-- Reduced-motion mode kept the ASCII output unchanged and centered.
-- The existing entrance and fabric-light code paths remain in place.
-
 ## Phase 3 — ASCII-rendering refinement — 2026-11-24
 
 ### Rendering changes
 
 - Replaced the previous custom 94-glyph ramp with a 95-glyph ramp sorted by average measured ink coverage across Liberation Mono and DejaVu Sans Mono.
 - Compared it against both the previous ramp and a classic 10-glyph ramp. The 10-glyph version loses too many subtle tones for the fabric texture and seams.
-- Regenerated the map from the canonical source image, \`notebook/references/glove.png\`, rather than remapping the old compressed map.
+- Regenerated the map from the canonical source image, notebook/references/glove.png, rather than remapping the old compressed map.
 - Used a 136 × 226 crop at source coordinates x=60, y=10, then Lanczos-resampled it to a 144 × 144 grid.
 - Applied a black point of 32, white point of 220, contrast of 1.04, and gamma of 0.85.
 - Kept the dark background quiet while retaining the glove's stitched seams, palm folds, cuff bands, and highlights.
-- Updated \`assets/glove-map.txt.gz\` and the runtime ramp in \`src/main.js\`.
+- Updated assets/glove-map.txt.gz and the runtime ramp in src/main.js.
 - Kept the existing entrance, Phase 2 idle movement, fabric-light sweep, reduced-motion behavior, and hidden-tab handling unchanged.
 
-### Validation
+### Validation and repair
 
-| Check | Result |
-|---|---|
-| Gzip map decompresses | Pass |
-| Map dimensions | 144 × 144 |
-| Unique ramp glyphs | 95 |
-| Unmapped characters | 0 |
-| Desktop grid | 144 × 144, uniform rows |
-| Mobile grid | 72 × 72, uniform rows |
-| Canonical source hash | Matches \`notebook/references/glove.png\` |
+- The map dimensions, ramp membership, and desktop/mobile grid dimensions were checked during the rendering pass.
+- The user initially encountered a blank page because an uploaded gzip map failed its CRC check. The map was replaced with a verified copy and the user later confirmed that the page renders and works correctly.
+- The repaired map's Git blob SHA is e09dbf1198eacc24f6a7b28501ab83143ac9ab11.
 
-Desktop and mobile preview images were generated locally from the exact character grids. Chromium headless capture did not complete in this execution environment, so these are local rendering previews, not browser screenshots. The live page still needs user review in the user's browser.
+## Phase 4 — Performance and compatibility — 2026-11-24
 
-### Pending user review
+### Implemented
 
-- Compare the new desktop rendering against the previous version.
-- Check whether small fabric details remain readable on mobile.
-- Confirm the black point removes background haze without erasing important glove shadows.
+- Precomputed the Gaussian palm/cuff masks and spatial sine/cosine coefficients once when the responsive grid is built. The per-frame character loop no longer constructs these masks or evaluates their spatial phases.
+- Moved temporal sine/cosine calculations outside the per-character loop and combines them with the precomputed coefficients.
+- Moved the fabric-light sweep calculation to a per-column pass. It now calculates 72 or 144 sweep weights per frame rather than repeating that exponential per character.
+- Added a 256-entry character-code lookup table.
+- Reused one typed output buffer for the complete ASCII frame.
+- Converted the output buffer into text in 8,192-character chunks and updated one retained text node, avoiding fresh row arrays and repeated child replacement each frame.
+- Corrected the frame limiter to carry fractional frame intervals forward toward the 24 FPS target. The previous implementation reset its clock to each render timestamp, which can undershoot the intended rate on 60 Hz displays.
+- The scheduler skips missed frame intervals after a pause or stall rather than attempting to catch up with multiple expensive frames.
+- Reset the frame clock when resuming after tab visibility changes.
+- Added feature detection for ResizeObserver with the existing window resize event as fallback.
+- Added support for both modern MediaQueryList addEventListener and legacy addListener change events.
+- Kept the existing entrance duration, entrance transform, living-portrait cycle values, fabric-light strength, 95-character ramp, 144/72 grid sizes, source map, reduced-motion behavior, and hidden-tab pause behavior.
+- No new package, library, font, network resource, audio, or visible page UI was added.
+
+### Integrity and source-level checks
+
+- The source patch was checked for required renderer components and expected compatibility branches.
+- The updated per-frame renderer contains no palm/cuff Gaussian-mask construction, no per-frame row-array allocation, and no per-character spatial exponential. The only exponential left in the frame renderer is the 72/144-value column-level fabric sweep.
+- The repository map SHA remains e09dbf1198eacc24f6a7b28501ab83143ac9ab11, the previously verified working gzip asset.
+- index.html and styles.css were left unchanged.
+- These checks are source-level checks, not a substitute for measuring frame time on the user's physical hardware.
+
+### Pending device review
+
+- Confirm the optimized build still renders correctly after a fresh reload.
+- Check the 4.8-second entrance and continuous idle on desktop and mobile.
+- Check a lower-powered phone or computer if available.
+- Observe whether the page stays smooth during a longer session.
+- Check resizing/orientation changes, reduced-motion mode, and hide/show behavior.
+- The project uses the native DecompressionStream API. MDN classifies it as widely available across modern browsers since May 2023; older browser versions may not support the compressed-map loader.
 
 ### Next work
 
-1. Get user feedback on Phase 3.
-2. Tune the ramp or tonal settings only if the preview reveals a specific issue.
-3. Move to Phase 4 only after the rendering is accepted.
-4. Keep GitHub Pages disabled until explicit approval.
-
-
-## Blank-page repair — 2026-11-24
-
-### Root cause
-
-- The Phase 3 gzip map stored on GitHub failed its gzip CRC check. The loader caught the decompression error and silently emptied the output element, making the website appear as a blank page.
-- The generated local map was valid: it decompresses to 144 rows × 144 characters, uses 95 unique supported characters, and has the expected Git blob SHA \`e09dbf1198eacc24f6a7b28501ab83143ac9ab11\`.
-
-### Repair
-
-- Replaced \`assets/glove-map.txt.gz\` with the verified local gzip asset. Its Git blob SHA was checked before committing.
-- Changed the loader's catch block to write the error to the browser console while keeping the page itself free of visible error text.
-
-### User run note
-
-- Serve the repository root through HTTP, for example \`python -m http.server 8000\`, then open \`http://localhost:8000/\`.
-- Opening \`index.html\` directly with a \`file://\` URL can prevent browser module and asset fetches, which also results in an empty page.
+1. Let the user review the optimized build on their devices.
+2. Fix only issues that are actually observed.
+3. Close Phase 4 after the physical-device checks.
+4. Proceed to Phase 5 only after Phase 4 review.
+5. Keep GitHub Pages disabled until explicit approval.

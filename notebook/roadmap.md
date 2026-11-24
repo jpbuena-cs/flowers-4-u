@@ -2,7 +2,7 @@
 
 ## Current stage
 
-The entrance (Phase 1) and living-portrait animation (Phase 2) are implemented. The first ASCII-rendering refinement pass (Phase 3) is complete and awaiting the user's visual review.
+Phases 1–3 have been implemented and the user has approved the entrance and living-portrait motion. Phase 4 has its first performance and compatibility implementation pass; physical-device verification remains open.
 
 The page's core rule remains unchanged: the ASCII artwork is the entire website. There should be no visible copy, controls, menus, navigation, or sound.
 
@@ -23,19 +23,14 @@ Refinements implemented:
 - No conspicuous bounce or overshoot.
 - Fabric lighting and subtle portrait motion run throughout the entrance.
 - The exact centered resting position is committed after the entrance completes.
-- Chromium checks passed at desktop and mobile viewport sizes.
 
-Remaining review:
-
-- Check the entrance speed and settling feel on the user's own desktop and phone.
-- Confirm the entire artwork starts outside the frame at different aspect ratios.
-- Tune duration or easing only in response to observed behavior.
+The user has accepted the current movement. A final review on other device sizes remains useful but is not blocking the current performance pass.
 
 **Completion criteria:** the whole hand emerges smoothly from below the frame, settles cleanly in the center, and does not feel rushed or mechanical.
 
 ### Phase 2 — Improve the living-portrait effect
 
-**Status: first implementation pass complete; user-device review pending**
+**Status: first implementation pass complete; user approved the movement**
 
 Make the otherwise still hand feel quietly alive without looking like a floating or wobbling sticker.
 
@@ -44,18 +39,19 @@ Refinements implemented:
 - Tuned the wrist-led pivot into a slow, gentle weight shift.
 - Gave horizontal drift, vertical drift, tilt, and breathing scale different cycle lengths so they do not repeat in lockstep.
 - Kept all whole-hand movement below one character cell.
-- Added a very small, feathered fabric warp around the palm folds and wrist cuff. It suggests cloth settling under its own weight, without introducing hard region borders or separately rigging the finger.
+- Added a very small, feathered fabric warp around the palm folds and wrist cuff.
 - Kept the raised finger and overall silhouette stable.
 - Preserved the existing fabric-light sweep as a separate continuous effect.
 - Scaled the localized movement for the smaller mobile character grid.
-- Preserved reduced-motion behavior: the complete artwork remains static when requested.
-- The user reviewed the movement and said it looked fine.
+- Preserved reduced-motion behavior.
+
+The user reviewed the movement and said it looked fine.
 
 **Completion criteria:** the hand feels gently animated while the composition remains steady. The idle movement must never compete with the entrance or the artwork itself.
 
 ### Phase 3 — Refine the ASCII rendering
 
-**Status: first implementation pass complete; user visual review pending**
+**Status: implementation complete; user confirmed the page works**
 
 Improve the quality of the image represented by the characters.
 
@@ -63,40 +59,50 @@ Refinements implemented:
 
 - Compared the existing 94-glyph ramp, a classic 10-glyph ramp, and a density-sorted 95-glyph ramp.
 - Selected a 95-glyph ramp ordered by average measured ink coverage across Liberation Mono and DejaVu Sans Mono.
-- Reframed the canonical source to a 136 × 226 crop that preserves the whole glove and matches the monospace cell aspect ratio.
+- Reframed the canonical source to a 136 × 226 crop.
 - Tuned the black point, white point, contrast, and gamma to suppress background haze while preserving dark seams, folds, and fabric shading.
 - Regenerated the 144 × 144 compressed map from the original source pixels.
 - Verified the map dimensions, glyph membership, and 144-column desktop / 72-column mobile outputs.
-- Kept the image monochrome and left all animation behavior intact.
-
-Remaining review:
-
-- Inspect the new shading and glove details in the user's browser.
-- Check whether the 95-glyph ramp looks cleaner than the previous ramp at both desktop and mobile sizes.
-- Tune tonal values only in response to visible issues.
+- Repaired a damaged gzip upload and verified the replacement against its known-good Git blob SHA.
+- Added console diagnostics for map-loading failures so future errors are not silently hidden.
 
 **Completion criteria:** the glove remains immediately recognizable, retains its important fabric details, and reads cleanly at both target widths.
 
 ### Phase 4 — Performance and compatibility
 
-**Priority: after Phase 3 approval**
+**Status: first optimization pass implemented; real-device verification pending**
 
-Make the animation dependable across common devices.
+Make the animation dependable across common devices without changing its appearance or adding dependencies.
 
-Planned refinements:
+Refinements implemented:
 
-- Profile character-grid updates and animation frame time.
-- Avoid unnecessary full-grid work where a smaller update is practical.
-- Check lower-powered computers and mobile devices.
-- Test a range of screen sizes, aspect ratios, and browser viewport changes.
-- Verify reduced-motion behavior, hidden-tab pausing, and reload behavior.
-- Keep the site free of frameworks, external libraries, third-party fonts, external assets, and audio.
+- Precompute the soft palm/cuff masks and their spatial wave coefficients when the responsive grid is built, rather than recalculating Gaussian masks and spatial trigonometry for every character on every frame.
+- Calculate time-dependent movement terms once per frame and apply them to the precomputed coefficients.
+- Calculate the fabric-light sweep once per column rather than once per character.
+- Add a 256-entry character-code lookup table.
+- Reuse a typed character output buffer and the existing text node instead of allocating row arrays and replacing the pre contents every frame.
+- Carry fractional frame intervals forward so the 24 FPS target is not reduced by a naïve timer reset on 60 Hz displays.
+- Skip missed frame intervals rather than trying to render several catch-up frames after a stall.
+- Feature-detect ResizeObserver and retain the window-resize fallback.
+- Support both modern and legacy MediaQueryList change-event APIs.
+- Preserve the entrance, living-portrait movement, fabric lighting, reduced-motion behavior, and hidden-tab pausing.
+- Keep all work local, with no framework, external library, downloaded font, remote asset, or audio.
 
-**Completion criteria:** the page renders consistently, does not introduce horizontal scrolling or clipping, and remains responsive during the animation.
+Remaining review:
+
+- Test a fresh load and the complete entrance on the user's desktop and phone.
+- Check whether animation remains smooth on a lower-powered device.
+- Inspect frame pacing and memory use during a longer session.
+- Verify the output remains centered and unclipped at several viewport sizes and orientations.
+- Verify reduced-motion and tab hide/show behavior on the user's actual browsers.
+
+**Compatibility note:** the gzip loader uses the native DecompressionStream API, which is widely available in modern browsers. Legacy browser versions from before broad support may not render the page. No fallback decompressor or additional library is included.
+
+**Completion criteria:** the page renders consistently, does not introduce horizontal scrolling or clipping, and remains responsive during the animation. Do not mark Phase 4 fully closed until physical-device checks have been done.
 
 ### Phase 5 — Final presentation and release preparation
 
-**Priority: last**
+**Priority: after Phase 4 device review**
 
 Prepare the repository for publication only after the experience is approved.
 
@@ -135,4 +141,4 @@ Constraints and risks:
 
 ## Current next action
 
-Get the user's feedback on the Phase 3 ASCII rendering at desktop and mobile sizes. Do not begin Phase 4 until the rendering has been reviewed.
+Have the user inspect the optimized build on their own desktop and phone, especially on a lower-powered device if available. Only close Phase 4 after that review; then proceed to Phase 5 release preparation.
