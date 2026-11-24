@@ -4,7 +4,7 @@
 
 Phases 1–3 have been implemented and the user has approved the entrance and living-portrait motion. Phase 4 has its first performance and compatibility implementation pass; physical-device verification remains open.
 
-The page's core rule remains unchanged: the ASCII artwork is the entire website. There should be no visible copy, controls, menus, navigation, or sound.
+The page remains a minimalist, artwork-first experience: the animated ASCII hand is central, with a small “Jaypee” maker's signature in the lower-left and one original entrance sound. There should be no explanatory copy, controls, menus, or navigation.
 
 ## Priority order
 
@@ -99,6 +99,18 @@ Remaining review:
 **Compatibility note:** the gzip loader uses the native DecompressionStream API, which is widely available in modern browsers. Legacy browser versions from before broad support may not render the page. No fallback decompressor or additional library is included.
 
 **Completion criteria:** the page renders consistently, does not introduce horizontal scrolling or clipping, and remains responsive during the animation. Do not mark Phase 4 fully closed until physical-device checks have been done.
+
+### Current polish — Entrance sound and signature
+
+**Status: implementation pass complete; user review pending**
+
+- Add a short original stone-drag scrape beginning 260ms before the hand enters.
+- Synthesize the sound with native Web Audio nodes; do not add a downloaded audio file, framework, or library.
+- Account for autoplay restrictions with a first-pointer/keyboard gesture unlock. Keep the page free of visible sound controls or explanatory text.
+- Add a quiet handwritten-style Jaypee signature at the lower-left using inline SVG paths.
+- Respect reduced-motion preference and pause/fade audio when the document is hidden.
+
+**Review criteria:** sound feels heavy and comedic without being harsh; the signature reads as Jaypee without competing with the ASCII hand.
 
 ### Phase 5 — Final presentation and release preparation
 

@@ -88,3 +88,37 @@
 - Checked for duplicate top-level declarations.
 - Ran renderer smoke tests at 144 × 144 desktop, 72 × 72 mobile, and the legacy compatibility path without ResizeObserver and without MediaQueryList.addEventListener. All produced complete, uniform ASCII rows and changing animation frames without runtime errors.
 - Confirmed the gzip asset's Git blob SHA remains e09dbf1198eacc24f6a7b28501ab83143ac9ab11.
+
+
+## Entrance sound and Jaypee signature — 2026-11-24
+
+### Requested additions
+
+- Add a one-shot, original heavy stone-drag sound beginning 260ms before the hand's entrance.
+- Add a subdued handwritten-style signature reading “Jaypee” in the lower-left corner.
+
+### Implementation
+
+- Build the scrape procedurally with Web Audio API nodes: seeded broadband noise, a filtered grit layer, low rumble, two low startup/weight thuds, and a pair of quiet low oscillators.
+- No audio file, remote asset, library, or external font is required.
+- Attempt autoplay at the scheduled sound time. If the browser blocks it, keep the sound pending and unlock Web Audio on the first normal pointer or keyboard gesture, provided the entrance window is still relevant.
+- The sound is not played in reduced-motion mode. Pending sound is cancelled on reduced-motion changes, and active sound is faded when the page becomes hidden.
+- Draw the signature as inline SVG strokes so it reads consistently across devices and does not depend on a script font.
+- Position the signature subtly at the lower-left, respecting mobile safe-area insets. It does not intercept pointer events.
+
+### Browser-policy note
+
+Modern browsers commonly block audible autoplay without prior user activation. An automatic attempt is made at the requested moment, but guaranteed audio without any user gesture is not possible on all browsers. The page remains free of audio buttons and explanatory copy; the first click, tap, or key press unlocks the audio path.
+
+### Validation completed before commit
+
+- The complete JavaScript module compiled successfully after substituting a test base URL for import.meta.url.
+- No duplicate top-level declarations; the existing 95-character ramp and single TARGET_FPS declaration are intact.
+- Mocked desktop and mobile renderer tests produced complete 144 × 144 and 72 × 72 ASCII grids with uniform rows and animated frame changes.
+- The audio scheduler placed the sound at 1,540ms and the entrance at 1,800ms, preserving the intended 260ms lead.
+- A mocked browser autoplay restriction kept audio pending until a pointer gesture resumed the AudioContext; the synthesized sound then created its buffer and expected audio nodes.
+- Reduced-motion runtime tests produced a static centered frame and scheduled no entrance sound.
+- Signature SVG was raster-previewed and visually checked; it reads as “Jaypee”. CSS uses lower-left placement, muted opacity, mobile sizing, and safe-area insets.
+- Verified the HTML contains no buttons, menus, or explanatory page copy; the requested signature is the only added visual.
+- The gzip map and 95-character ramp are unchanged. No downloaded sound file, remote font, or third-party request was added.
+- These are syntax and controlled-runtime checks, not tests on the user's physical browser or speakers. Browser autoplay may still require a first user gesture.

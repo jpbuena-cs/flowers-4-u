@@ -28,6 +28,7 @@ body {
 }
 
 .stage {
+  position: relative;
   display: grid;
   width: 100%;
   height: 100vh;
@@ -64,5 +65,34 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .art {
     animation: none;
+  }
+}
+
+.signature-mark {
+  position: absolute;
+  z-index: 2;
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: block;
+  width: clamp(78px, 8vw, 112px);
+  height: auto;
+  overflow: visible;
+  fill: none;
+  stroke: #c9c8c0;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.38;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .signature-mark {
+    width: 76px;
+    left: max(14px, env(safe-area-inset-left));
+    bottom: max(12px, env(safe-area-inset-bottom));
+    stroke-width: 1.9;
+    opacity: 0.34;
   }
 }

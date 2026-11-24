@@ -15,7 +15,8 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 - One monospace family, with no decorative typography.
 - Art centered in the viewport with generous negative space.
 - No visible text, headings, labels, buttons, menus, navigation, borders, cards, or loading indicators.
-- No sound.
+- A small, muted handwritten-style signature reading “Jaypee” sits in the lower-left corner.
+- An original, low, rough stone-drag sound begins shortly before the entrance when browser audio policy permits it. No music or sound loop.
 - No gradients or effects outside the character rendering itself.
 
 ## Character rendering
@@ -46,12 +47,14 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 - While the hand is in view, a tiny wrist-led sway, sub-character drift, and near-imperceptible breathing scale keep the illustration feeling alive.
 - Keep the movement restrained. Avoid aggressive glitches, bouncing, or a metallic scanning effect.
 - Loop the idle and fabric motion continuously after the entrance.
-- Respect prefers-reduced-motion: show the artwork immediately in its final centered position as a static frame.
+- Respect prefers-reduced-motion: show the artwork immediately in its final centered position as a static frame, and do not play the entrance sound.
 - Pause animation when the page is hidden.
 
 ## Technical note
 
 The source is a single flattened image. The entry is a translation of the complete ASCII artwork, not an independent finger rig. The subtle idle movement is a small remapping of the ASCII brightness grid.
+
+The “Jaypee” signature is a small inline SVG path, avoiding font dependency or text reflow. The entrance sound is synthesized with the native Web Audio API and does not require an external audio file. Because browsers may block audible autoplay, the page also unlocks audio on the first natural pointer or keyboard interaction; no button or instruction is added to the page.
 
 ## Tone
 

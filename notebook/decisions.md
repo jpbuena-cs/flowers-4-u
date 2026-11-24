@@ -2,7 +2,7 @@
 
 | Decision | Current choice | Reason |
 |---|---|---|
-| Page content | ASCII artwork only | The artwork itself is the experience. |
+| Page content | ASCII artwork with a small, discreet handwritten “Jaypee” signature | The artwork remains the focus; the signature acts as a quiet maker's mark. |
 | Visual style | Minimal, near-black, monochrome | Follows the requested clean ASCII-rest-like direction without adding decorative UI. |
 | Source subject | The exact white/gray fabric glove in notebook/references/glove.png | Prevents the subject being reinterpreted as metal, armor, or a generic glove. |
 | Source identity | Canonical repository reference is notebook/references/glove.png, a 256 × 256 PNG; its Git blob SHA is recorded in notebook/source-image.md | Gives future work a stable visual reference. |
@@ -22,8 +22,11 @@
 | Entrance easing | Gradual ease-in/ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
 | Living-image idle | Slow wrist-led weight shift, non-synchronized breathing/drift cycles, and soft local fabric movement around palm folds and cuff | Adds quiet presence while protecting the finger silhouette and avoiding a rigid, metronomic loop. |
 | Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
+| Entrance sound | Original synthesized stone-drag scrape begins 260ms before the entrance | Adds the requested oversized, comedic weight to the hand's arrival without loading an external sound asset. |
+| Audio autoplay fallback | Unlock Web Audio on the first pointer or keyboard gesture; play only while the entrance window is still relevant | Respects browser autoplay restrictions without adding a visible button or instruction. |
+| Signature rendering | Inline SVG strokes, muted opacity, fixed lower-left placement | Keeps the signature consistent across systems without downloading a cursive font. |
 | Motion accessibility | Static, centered frame for reduced-motion preference; pause the loop while the document is hidden | Avoids continuous motion when requested and reduces background work. |
-| Dependencies | Native HTML, CSS, JavaScript only | Small static project; no framework or library is needed. |
+| Dependencies | Native HTML, CSS, JavaScript and Web Audio API only | Small static project; no framework, library, or external audio file is needed. |
 | Deployment | Repository is Pages-ready, but Pages is not enabled | Build and review locally before publication. |
 
 ## Changes that require discussion

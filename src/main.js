@@ -14,6 +14,7 @@ const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
 const START_DELAY = 1800;
 const ENTRY_DURATION = 4800;
+const SOUND_LEAD_MS = 260;
 const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 const TAU = Math.PI * 2;
@@ -41,9 +42,279 @@ let entranceAnimation = null;
 let entranceStarted = false;
 let hasEntered = false;
 let isVisible = !document.hidden;
+let audioContext = null;
+let soundTimer = 0;
+let soundPending = false;
+let soundPlayed = false;
+let soundTargetAt = 0;
+let activeSoundMaster = null;
+let activeSoundSources = [];
 
 function clamp(value, minimum, maximum) {
   return Math.max(minimum, Math.min(maximum, value));
+}
+
+function getAudioContext() {
+  if (audioContext) return audioContext;
+
+  const AudioContextConstructor = window.AudioContext || window.webkitAudioContext;
+  if (typeof AudioContextConstructor !== "function") {
+    console.warn("Entrance sound is unavailable: this browser has no Web Audio API.");
+    return null;
+  }
+
+  try {
+    audioContext = new AudioContextConstructor();
+  } catch (error) {
+    console.warn("Entrance sound could not be initialized:", error);
+    return null;
+  }
+
+  return audioContext;
+}
+
+function removeAudioUnlockListeners() {
+  document.removeEventListener("pointerdown", unlockEntranceAudio);
+  document.removeEventListener("keydown", unlockEntranceAudio);
+}
+
+function unlockEntranceAudio() {
+  const context = getAudioContext();
+  if (!context) {
+    removeAudioUnlockListeners();
+    return;
+  }
+
+  if (context.state === "running") {
+    removeAudioUnlockListeners();
+    attemptEntranceSound();
+    return;
+  }
+
+  // Browsers generally require a real user gesture before allowing audible
+  // playback. Unlock on the first natural page interaction; no control is shown.
+  context.resume().then(() => {
+    if (context.state === "running") {
+      removeAudioUnlockListeners();
+      attemptEntranceSound();
+    }
+  }).catch((error) => {
+    console.info("Entrance sound is waiting for a user gesture:", error);
+  });
+}
+
+function stopEntranceSound() {
+  if (!audioContext || !activeSoundMaster || audioContext.state === "closed") {
+    activeSoundMaster = null;
+    activeSoundSources = [];
+    return;
+  }
+
+  const now = audioContext.currentTime;
+  try {
+    // Set the gain to silence immediately in audio time. This also works when
+    // the browser has suspended the context because the page became hidden.
+    activeSoundMaster.gain.cancelScheduledValues(now);
+    activeSoundMaster.gain.setValueAtTime(0.0001, now);
+  } catch {
+    // Continue stopping individual sources even if the context is interrupted.
+  }
+
+  const stopAt = now + (audioContext.state === "running" ? 0.12 : 0.01);
+  for (const source of activeSoundSources) {
+    try {
+      source.stop(stopAt);
+    } catch {
+      // A source may already have reached its scheduled end.
+    }
+  }
+
+  activeSoundMaster = null;
+  activeSoundSources = [];
+}
+
+function playStoneDrag(durationSeconds) {
+  if (
+    !audioContext
+    || audioContext.state !== "running"
+    || soundPlayed
+    || REDUCED_MOTION.matches
+  ) {
+    return false;
+  }
+
+  const context = audioContext;
+  const duration = Math.max(0.65, durationSeconds);
+  const startAt = context.currentTime + 0.035;
+  const endAt = startAt + duration;
+
+  const master = context.createGain();
+  master.gain.setValueAtTime(0.0001, startAt);
+  master.gain.linearRampToValueAtTime(0.36, startAt + 0.14);
+  master.gain.setValueAtTime(0.32, Math.max(startAt + 0.2, endAt - 0.42));
+  master.gain.linearRampToValueAtTime(0.0001, endAt);
+  master.connect(context.destination);
+
+  // A single seeded noise bed feeds two filters: a gritty, rough scrape and
+  // a low rolling rumble. The seed keeps the character of the joke consistent.
+  const frameCount = Math.ceil(context.sampleRate * duration);
+  const noiseBuffer = context.createBuffer(1, frameCount, context.sampleRate);
+  const noise = noiseBuffer.getChannelData(0);
+  let seed = 0x6d2b79f5;
+  for (let i = 0; i < frameCount; i += 1) {
+    seed ^= seed << 13;
+    seed ^= seed >>> 17;
+    seed ^= seed << 5;
+    noise[i] = ((seed >>> 0) / 0xffffffff) * 2 - 1;
+  }
+
+  const noiseSource = context.createBufferSource();
+  noiseSource.buffer = noiseBuffer;
+
+  const scrapeFilter = context.createBiquadFilter();
+  scrapeFilter.type = "bandpass";
+  scrapeFilter.Q.setValueAtTime(0.82, startAt);
+  scrapeFilter.frequency.setValueAtTime(680, startAt);
+  scrapeFilter.frequency.linearRampToValueAtTime(310, startAt + duration * 0.46);
+  scrapeFilter.frequency.linearRampToValueAtTime(570, endAt - 0.12);
+
+  const scrapeGain = context.createGain();
+  scrapeGain.gain.setValueAtTime(0.0001, startAt);
+  scrapeGain.gain.linearRampToValueAtTime(0.22, startAt + 0.22);
+  scrapeGain.gain.linearRampToValueAtTime(0.12, startAt + duration * 0.48);
+  scrapeGain.gain.linearRampToValueAtTime(0.19, endAt - 0.36);
+  scrapeGain.gain.linearRampToValueAtTime(0.0001, endAt);
+
+  const rumbleFilter = context.createBiquadFilter();
+  rumbleFilter.type = "lowpass";
+  rumbleFilter.frequency.setValueAtTime(155, startAt);
+  rumbleFilter.frequency.linearRampToValueAtTime(92, endAt);
+  const rumbleGain = context.createGain();
+  rumbleGain.gain.setValueAtTime(0.0001, startAt);
+  rumbleGain.gain.linearRampToValueAtTime(0.2, startAt + 0.3);
+  rumbleGain.gain.linearRampToValueAtTime(0.12, endAt - 0.35);
+  rumbleGain.gain.linearRampToValueAtTime(0.0001, endAt);
+
+  noiseSource.connect(scrapeFilter);
+  scrapeFilter.connect(scrapeGain);
+  scrapeGain.connect(master);
+  noiseSource.connect(rumbleFilter);
+  rumbleFilter.connect(rumbleGain);
+  rumbleGain.connect(master);
+
+  // Low, slightly detuned tones make the scrape feel like a heavy object
+  // taking its weight and dragging, rather than a bright metallic clang.
+  const bodyOscillator = context.createOscillator();
+  bodyOscillator.type = "sine";
+  bodyOscillator.frequency.setValueAtTime(48, startAt);
+  bodyOscillator.frequency.linearRampToValueAtTime(34, startAt + duration * 0.58);
+  bodyOscillator.frequency.linearRampToValueAtTime(40, endAt);
+  const bodyGain = context.createGain();
+  bodyGain.gain.setValueAtTime(0.0001, startAt);
+  bodyGain.gain.linearRampToValueAtTime(0.105, startAt + 0.16);
+  bodyGain.gain.linearRampToValueAtTime(0.065, endAt - 0.3);
+  bodyGain.gain.linearRampToValueAtTime(0.0001, endAt);
+  bodyOscillator.connect(bodyGain);
+  bodyGain.connect(master);
+
+  const secondaryOscillator = context.createOscillator();
+  secondaryOscillator.type = "triangle";
+  secondaryOscillator.frequency.setValueAtTime(73, startAt);
+  secondaryOscillator.frequency.linearRampToValueAtTime(61, endAt);
+  const secondaryGain = context.createGain();
+  secondaryGain.gain.setValueAtTime(0.0001, startAt);
+  secondaryGain.gain.linearRampToValueAtTime(0.025, startAt + 0.18);
+  secondaryGain.gain.linearRampToValueAtTime(0.0001, endAt);
+  secondaryOscillator.connect(secondaryGain);
+  secondaryGain.connect(master);
+
+  const thud = (when, frequency, peak) => {
+    const oscillator = context.createOscillator();
+    oscillator.type = "sine";
+    oscillator.frequency.setValueAtTime(frequency, when);
+    oscillator.frequency.exponentialRampToValueAtTime(Math.max(20, frequency * 0.58), when + 0.24);
+    const gain = context.createGain();
+    gain.gain.setValueAtTime(0.0001, when);
+    gain.gain.linearRampToValueAtTime(peak, when + 0.018);
+    gain.gain.exponentialRampToValueAtTime(0.0001, when + 0.34);
+    oscillator.connect(gain);
+    gain.connect(master);
+    oscillator.start(when);
+    oscillator.stop(when + 0.36);
+    activeSoundSources.push(oscillator);
+  };
+
+  noiseSource.start(startAt);
+  noiseSource.stop(endAt + 0.04);
+  bodyOscillator.start(startAt);
+  bodyOscillator.stop(endAt + 0.04);
+  secondaryOscillator.start(startAt);
+  secondaryOscillator.stop(endAt + 0.04);
+  activeSoundSources = [noiseSource, bodyOscillator, secondaryOscillator];
+
+  thud(startAt + 0.025, 57, 0.16);
+  thud(startAt + Math.min(1.25, duration * 0.36), 43, 0.075);
+
+  activeSoundMaster = master;
+  soundPlayed = true;
+  soundPending = false;
+
+  window.setTimeout(() => {
+    if (activeSoundMaster === master) {
+      activeSoundMaster = null;
+      activeSoundSources = [];
+    }
+    try {
+      scrapeFilter.disconnect();
+      scrapeGain.disconnect();
+      rumbleFilter.disconnect();
+      rumbleGain.disconnect();
+      bodyGain.disconnect();
+      secondaryGain.disconnect();
+      master.disconnect();
+    } catch {
+      // Audio nodes may already be disconnected by browser cleanup.
+    }
+  }, duration * 1000 + 250);
+
+  return true;
+}
+
+function attemptEntranceSound() {
+  if (!soundPending || soundPlayed || REDUCED_MOTION.matches || !isVisible) return;
+
+  const elapsedMs = performance.now() - soundTargetAt;
+  if (elapsedMs < 0) return;
+
+  const remainingMs = SOUND_LEAD_MS + ENTRY_DURATION - elapsedMs;
+  if (remainingMs <= 0) {
+    soundPending = false;
+    return;
+  }
+
+  const context = getAudioContext();
+  if (!context || context.state !== "running") return;
+
+  playStoneDrag(remainingMs / 1000);
+}
+
+function scheduleEntranceSound() {
+  if (soundPlayed || REDUCED_MOTION.matches) return;
+
+  soundPending = true;
+  soundTargetAt = performance.now() + START_DELAY - SOUND_LEAD_MS;
+
+  if (soundTimer) window.clearTimeout(soundTimer);
+  soundTimer = window.setTimeout(() => {
+    soundTimer = 0;
+    attemptEntranceSound();
+  }, Math.max(0, soundTargetAt - performance.now()));
+}
+
+function cancelPendingEntranceSound() {
+  if (soundTimer) window.clearTimeout(soundTimer);
+  soundTimer = 0;
+  soundPending = false;
 }
 
 function getColumnTarget() {
@@ -208,6 +479,8 @@ function stopAnimationLoop() {
   animationFrame = 0;
   if (startTimer) clearTimeout(startTimer);
   startTimer = 0;
+  if (soundTimer) window.clearTimeout(soundTimer);
+  soundTimer = 0;
 }
 
 function cancelEntrance() {
@@ -420,6 +693,9 @@ function startAnimation({ enter = false } = {}) {
     entranceAnimation.play();
     animationStartedAt = performance.now() - animationElapsed;
     lastFrameAt = animationStartedAt;
+    if (soundPending && !soundPlayed) {
+      soundTimer = window.setTimeout(attemptEntranceSound, Math.max(0, soundTargetAt - performance.now()));
+    }
     animationFrame = requestAnimationFrame(animate);
     return;
   }
@@ -429,6 +705,7 @@ function startAnimation({ enter = false } = {}) {
 
   if (!shouldEnter) setArtAtRest();
   renderFrame(animationElapsed, false);
+  if (shouldEnter) scheduleEntranceSound();
 
   startTimer = window.setTimeout(() => {
     animationStartedAt = performance.now() - animationElapsed;
@@ -504,6 +781,8 @@ const handleMotionPreferenceChange = () => {
   stopAnimationLoop();
 
   if (REDUCED_MOTION.matches) {
+    cancelPendingEntranceSound();
+    stopEntranceSound();
     hasEntered = true;
     animationElapsed = 0;
     setArtAtRest();
@@ -527,6 +806,7 @@ document.addEventListener("visibilitychange", () => {
       animationElapsed = performance.now() - animationStartedAt;
     }
     stopAnimationLoop();
+    stopEntranceSound();
     if (entranceAnimation) entranceAnimation.pause();
   } else {
     startAnimation({ enter: !hasEntered });
@@ -534,4 +814,6 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("resize", refreshLayout, { passive: true });
+document.addEventListener("pointerdown", unlockEntranceAudio, { passive: true });
+document.addEventListener("keydown", unlockEntranceAudio);
 loadArtworkMap();
