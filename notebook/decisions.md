@@ -7,8 +7,8 @@
 | Subject interpretation | White cartoon glove | The source is a classic cartoon-style glove, not metal armor. |
 | Character density | Broad glyph ramp; 144 desktop / 72 mobile target columns | Increase definition while keeping small screens legible. |
 | Rendering element | HTML pre element | Preserves whitespace and character alignment. |
-| Conversion | Browser canvas samples the supplied source image | Keeps one high-quality source asset and allows responsive re-rendering. |
-| Animation | Soft cloth-light sweep plus subtle tonal variation | Adds life without making the hand wobble or look metallic. |
+| Conversion | Precomputed gzip-compressed text map | Keeps the page centered on ASCII data, avoids image decoding at runtime, and reduces transfer size; decompression uses a native browser API. |
+| Animation | Smooth back-and-forth cloth-light sweep plus subtle tonal variation | Adds life without making the hand wobble or look metallic. |
 | Start timing | 1.8-second pause after initial render | Gives the still image a moment before motion begins. |
 | Motion accessibility | Static frame for reduced-motion preference | Avoids continuous movement when a user requests reduced motion. |
 | Dependencies | Native HTML, CSS, JavaScript only | Small static project; no framework or library is needed. |

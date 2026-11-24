@@ -1,8 +1,8 @@
-const IMAGE_URL = new URL("../assets/source-glove.jpg", import.meta.url);
-const CROP = { x: 0, y: 0, width: 136, height: 226 };
+const MAP_URL = new URL("../assets/glove-map.txt.gz", import.meta.url);
+const SOURCE_COLUMNS = 144;
+const SOURCE_ROWS = 144;
 
-// Ordered from visually sparse to visually dense. The wide range preserves
-// fabric folds, seams, and the glove's silhouette without adding color.
+// Ordered from visually sparse to visually dense. The map uses this same ramp.
 const RAMP = " .-',:~\";^!_*+|=/\\)(r<>[]l?jv1cxzu7LYins}yJTt{Cfw%IVhFk2oX3mqdZ$4eaSp5bPAUGK&OEg09H6DQR8W#@NMB";
 const TARGET_FPS = 24;
 const FRAME_INTERVAL = 1000 / TARGET_FPS;
@@ -11,12 +11,10 @@ const CHAR_WIDTH_RATIO = 0.602;
 const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 const output = document.querySelector("#art");
-const image = new Image();
-const sampleCanvas = document.createElement("canvas");
-const sampleContext = sampleCanvas.getContext("2d", { willReadFrequently: true });
 const measureCanvas = document.createElement("canvas");
 const measureContext = measureCanvas.getContext("2d");
 
+let sourcePixels = null;
 let pixels = null;
 let columns = 0;
 let rows = 0;
@@ -48,13 +46,12 @@ function getFontSize(nextColumns, nextRows) {
 }
 
 function buildSampleGrid() {
-  if (!image.complete || image.naturalWidth === 0) return false;
+  if (!sourcePixels) return false;
 
   const targetColumns = getColumnTarget();
-  const sourceAspect = CROP.width / CROP.height;
   const targetRows = Math.max(
     1,
-    Math.round((targetColumns * CHAR_WIDTH_RATIO) / sourceAspect),
+    Math.round((targetColumns * SOURCE_ROWS) / SOURCE_COLUMNS),
   );
   const gridChanged = targetColumns !== columns || targetRows !== rows || !pixels;
 
@@ -66,36 +63,28 @@ function buildSampleGrid() {
 
   columns = targetColumns;
   rows = targetRows;
-
-  sampleCanvas.width = columns;
-  sampleCanvas.height = rows;
-  sampleContext.clearRect(0, 0, columns, rows);
-  sampleContext.imageSmoothingEnabled = true;
-  sampleContext.imageSmoothingQuality = "high";
-  sampleContext.drawImage(
-    image,
-    CROP.x,
-    CROP.y,
-    CROP.width,
-    CROP.height,
-    0,
-    0,
-    columns,
-    rows,
-  );
-
-  const rgba = sampleContext.getImageData(0, 0, columns, rows).data;
   pixels = new Uint8Array(columns * rows);
 
-  for (let index = 0, pixel = 0; index < rgba.length; index += 4, pixel += 1) {
-    const luminance = 0.2126 * rgba[index]
-      + 0.7152 * rgba[index + 1]
-      + 0.0722 * rgba[index + 2];
+  // Average source cells when reducing from the desktop map to the mobile grid.
+  for (let y = 0; y < rows; y += 1) {
+    const sourceY0 = Math.floor((y * SOURCE_ROWS) / rows);
+    const sourceY1 = Math.max(sourceY0 + 1, Math.floor(((y + 1) * SOURCE_ROWS) / rows));
 
-    // Lift the glove's soft gray fabric while keeping the background black.
-    const normalized = Math.max(0, (luminance - 22) / 198);
-    const shaped = Math.pow(Math.min(1, normalized), 0.72);
-    pixels[pixel] = Math.round(shaped * 255);
+    for (let x = 0; x < columns; x += 1) {
+      const sourceX0 = Math.floor((x * SOURCE_COLUMNS) / columns);
+      const sourceX1 = Math.max(sourceX0 + 1, Math.floor(((x + 1) * SOURCE_COLUMNS) / columns));
+      let total = 0;
+      let count = 0;
+
+      for (let sourceY = sourceY0; sourceY < sourceY1; sourceY += 1) {
+        for (let sourceX = sourceX0; sourceX < sourceX1; sourceX += 1) {
+          total += sourcePixels[sourceY * SOURCE_COLUMNS + sourceX];
+          count += 1;
+        }
+      }
+
+      pixels[y * columns + x] = Math.round(total / count);
+    }
   }
 
   renderFrame(0, false);
@@ -113,7 +102,9 @@ function characterFor(value) {
 function renderFrame(elapsed, animated) {
   if (!pixels) return;
 
-  const sweepPosition = animated ? (elapsed % 10000) / 10000 : -1;
+  const sweepPosition = animated
+    ? 0.5 - 0.5 * Math.cos((elapsed / 12000) * Math.PI * 2)
+    : -1;
   const lines = new Array(rows);
 
   for (let y = 0; y < rows; y += 1) {
@@ -184,17 +175,44 @@ function refreshLayout() {
   if (gridChanged) startAnimation();
 }
 
-image.addEventListener("load", () => {
-  buildSampleGrid();
-  startAnimation();
-}, { once: true });
+async function loadArtworkMap() {
+  try {
+    const response = await fetch(MAP_URL);
+    if (!response.ok) throw new Error("Artwork map could not be loaded");
 
-image.addEventListener("error", () => {
-  // Keep the page empty rather than showing fallback copy or interface text.
-  output.textContent = "";
-}, { once: true });
+    if (typeof DecompressionStream === "undefined") {
+      throw new Error("This browser does not support native gzip decompression");
+    }
 
-image.src = IMAGE_URL.href;
+    const compressed = await response.arrayBuffer();
+    const decompressed = new Blob([compressed])
+      .stream()
+      .pipeThrough(new DecompressionStream("gzip"));
+    const raw = await new Response(decompressed).text();
+    const lines = raw.split(/\r?\n/);
+    if (lines[lines.length - 1] === "") lines.pop();
+    if (lines.length !== SOURCE_ROWS || lines.some((line) => line.length !== SOURCE_COLUMNS)) {
+      throw new Error("Artwork map has an unexpected size");
+    }
+
+    sourcePixels = new Uint8Array(SOURCE_COLUMNS * SOURCE_ROWS);
+    for (let y = 0; y < SOURCE_ROWS; y += 1) {
+      for (let x = 0; x < SOURCE_COLUMNS; x += 1) {
+        const rampIndex = RAMP.indexOf(lines[y][x]);
+        if (rampIndex < 0) throw new Error("Artwork map contains an unknown character");
+        sourcePixels[y * SOURCE_COLUMNS + x] = Math.round(
+          (rampIndex / (RAMP.length - 1)) * 255,
+        );
+      }
+    }
+
+    buildSampleGrid();
+    startAnimation();
+  } catch {
+    // Keep the page empty rather than showing fallback copy or interface text.
+    output.textContent = "";
+  }
+}
 
 const resizeObserver = new ResizeObserver(() => refreshLayout());
 resizeObserver.observe(document.querySelector(".stage"));
@@ -218,3 +236,4 @@ document.addEventListener("visibilitychange", () => {
 });
 
 window.addEventListener("resize", refreshLayout, { passive: true });
+loadArtworkMap();

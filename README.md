@@ -1,23 +1,21 @@
 # sumosobra-kana
 
-A minimalist, single-purpose ASCII art page. The page itself contains only the animated character rendering; project notes and implementation decisions live separately in [`notebook/`](./notebook/).
+A minimalist, single-purpose ASCII art page. The website renders a precomputed character map derived from the user-provided white cartoon glove image. The page itself contains only the animated character rendering; project notes and implementation decisions live separately in notebook/.
 
 ## Run locally
 
-From the repository root:
-
-```bash
+~~~bash
 python -m http.server 8000
-```
+~~~
 
-Then open `http://localhost:8000`.
+Then open http://localhost:8000.
 
 ## Project structure
 
-```text
+~~~text
 .
 ├── assets/
-│   └── source-glove.png
+│   └── glove-map.txt.gz
 ├── notebook/
 │   ├── README.md
 │   ├── design-brief.md
@@ -28,15 +26,15 @@ Then open `http://localhost:8000`.
 │   └── main.js
 ├── index.html
 └── styles.css
-```
+~~~
 
 ## Current prototype
 
-- Converts the supplied monochrome cartoon-glove image into a dense character grid in the browser.
-- Uses a 95-character ramp for tonal detail, with a black-level threshold to suppress background noise.
-- Chooses a different character-grid width for mobile and desktop, then fits the art without wrapping or stretching it.
+- Uses a 94-character brightness ramp for tonal detail.
+- Stores the source artwork as a gzip-compressed 144 × 144 character map and decompresses it with the browser’s native API.
+- Uses 144 columns on desktop and averages the map down to 72 columns on mobile.
 - Waits briefly before starting a restrained, continuous fabric-light animation.
 - Shows a static rendering when reduced motion is enabled.
-- Uses native browser APIs only. No framework, external font, library, network request, audio, or visible interface controls.
+- Uses native browser APIs only. No framework, third-party font, library, external request, audio, or visible interface controls.
 
 GitHub Pages has not been configured or enabled as part of this prototype.

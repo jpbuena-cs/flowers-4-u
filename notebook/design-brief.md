@@ -38,8 +38,8 @@ A monochrome illustration of a white cartoon glove making a playful middle-finge
 ## Motion
 
 - Render a complete still image first.
-- Wait approximately 1.8 seconds after the image is ready.
-- Animate the cloth with restrained changes in character density: a broad, soft moving highlight and extremely subtle tonal variation.
+- Wait approximately 1.8 seconds after the map is ready.
+- Animate the cloth with restrained changes in character density: a broad, soft highlight that moves smoothly back and forth and extremely subtle tonal variation.
 - Keep the silhouette and overall hand position stable. Avoid aggressive glitches, bouncing, or a metallic scanning effect.
 - Loop continuously.
 - Respect prefers-reduced-motion: show a complete static frame and do not run continuous animation.
