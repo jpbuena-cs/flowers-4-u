@@ -6,7 +6,7 @@
 - styles.css: viewport centering, monochrome palette, monospace typography, and overflow control.
 - src/main.js: text-map loading, responsive sampling, luminance mapping, procedural idle motion, entrance timing, and reduced-motion handling.
 - assets/glove-map.txt.gz: gzip-compressed 144 × 144 character-density map generated from the exact source image documented in [source-image.md](./source-image.md).
-- notebook/references/source-glove.png: compact visual copy of the original supplied source for design alignment.
+- notebook/references/glove.png: canonical visual reference for the source glove.
 - notebook/: project intent, source reference, settled choices, implementation notes, roadmap, and progress.
 
 ## Rendering pipeline
@@ -23,7 +23,7 @@
 1. Render the complete ASCII hand while positioning its text container below the viewport, outside the visible frame.
 2. Wait 1.8 seconds after the map is ready.
 3. Start the fabric-light sweep and subtle living-portrait idle movement.
-4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 4.6 seconds.
+4. At the same moment, transition the complete hand upward from below the bottom edge into its centered resting position over 4.8 seconds.
 5. Use a gentle ease-in/ease-out curve for the main rise, then a very small settle to exact center. Avoid visible bouncing.
 6. Keep the fabric light and quiet hand idle looping after the entrance has completed.
 7. Pause motion while the document is hidden and honor prefers-reduced-motion.

@@ -1,13 +1,14 @@
 # Progress
 
-## Source-image alignment and Phase 1 refinement — 2026-11-24
+## Source-reference alignment and Phase 1 — 2026-11-24
 
 ### Canonical source image
 
-- Added [source-image.md](./source-image.md) and [references/source-glove.png](./references/source-glove.png).
-- The newly re-uploaded source is pixel-identical to the first image supplied for this project.
-- Original source details and SHA-256 are recorded in source-image.md.
-- The existing compressed ASCII map remains based on that same image.
+- Confirmed the repository's canonical reference is [references/glove.png](./references/glove.png).
+- Inspected the actual image: a 256 × 256 monochrome fabric glove against a near-black background, with its middle finger raised, other fingers folded, stitched seams, palm folds, and a broad cuff.
+- Updated [source-image.md](./source-image.md) to describe and point to \`glove.png\`.
+- Updated implementation and decision notes so they no longer point to the obsolete \`source-glove.png\` filename.
+- The existing compressed ASCII map remains associated with this same glove artwork.
 
 ### Phase 1 — Entrance polish
 

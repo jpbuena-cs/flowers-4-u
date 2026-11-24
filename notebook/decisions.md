@@ -4,13 +4,13 @@
 |---|---|---|
 | Page content | ASCII artwork only | The artwork itself is the experience. |
 | Visual style | Minimal, near-black, monochrome | Follows the requested clean ASCII-rest-like direction without adding decorative UI. |
-| Source subject | The exact white/gray fabric glove in \`notebook/references/source-glove.png\` | Prevents the subject being reinterpreted as metal, armor, or a generic glove. |
-| Source identity | Original is a 256 × 256 indexed PNG; SHA-256 is recorded in \`notebook/source-image.md\` | Gives future work a stable reference and confirms the re-upload matches the original source. |
+| Source subject | The exact white/gray fabric glove in \`notebook/references/glove.png\` | Prevents the subject being reinterpreted as metal, armor, or a generic glove. |
+| Source identity | Canonical repository reference is \`notebook/references/glove.png\`, a 256 × 256 PNG; its Git blob SHA is recorded in \`notebook/source-image.md\` | Gives future work a stable visual reference. |
 | Character density | Broad glyph ramp; 144 desktop / 72 mobile target columns | Increase definition while keeping small screens legible. |
 | Rendering element | HTML pre element | Preserves whitespace and character alignment. |
 | Conversion | Precomputed gzip-compressed text map | Keeps the page centered on ASCII data, avoids image decoding at runtime, and reduces transfer size; decompression uses a native browser API. |
 | Main movement | Entire ASCII hand enters from below the viewport | “Creep up” means the complete hand moves into the website view, not that the raised finger articulates. |
-| Entrance timing | 1.8-second delay, then a 4.6-second ease with a tiny settle | Gives the blank page a brief pause before a deliberate, unhurried entrance. |
+| Entrance timing | 1.8-second delay, then a 4.8-second ease with a tiny settle | Gives the blank page a brief pause before a deliberate, unhurried entrance. |
 | Entrance easing | Gradual ease-in/ease-out, ending with a 2.5px lift and a 0.8px settle before exact center | Adds a natural sense of weight without a conspicuous bounce. |
 | Living-image idle | Tiny wrist-led rotation, fractional-cell drift, and subtle breathing scale | Adds life during and after entrance without shaking the whole image. |
 | Fabric light | Smooth back-and-forth cloth highlight continues during entrance and idle | Keeps the existing animation running alongside the entrance. |
